@@ -24,6 +24,7 @@ export interface CartItem {
   Game_Title: string;
   Price_to_Sell_For: number;
   quantity: number;
+  isFlashSaleEligible?: boolean; // Add this line
 }
 
 export interface FilterState {

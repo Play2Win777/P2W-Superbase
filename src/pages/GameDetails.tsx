@@ -2,6 +2,10 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Sparkles } from 'lucide-react';
 import { useStore } from '../store';
+// Add these imports at the top
+import { Zap } from 'lucide-react';
+import { FlashSaleBadge } from '../components/FlashSaleBadge';
+import { isFlashSaleEligible } from '../utils/gameHelpers';
 
 // Game Bundle Component
 const GameBundles: React.FC<{ currentGame: any }> = ({ currentGame }) => {
@@ -74,6 +78,8 @@ export const GameDetails: React.FC = () => {
   }, [fetchGames]);
 
   const game = games.find((g) => g.id === id);
+  // Add this line to check flash sale eligibility
+  const isEligible = game ? isFlashSaleEligible(game) : false;
 
   if (!game) {
     return <div>Game not found</div>;
@@ -104,6 +110,8 @@ export const GameDetails: React.FC = () => {
         {/* Left Column - Main Content */}
         <div className="col-span-12 md:col-span-8">
           <div className="relative mb-6">
+            {/* Add flash sale badge if eligible */}
+            {isEligible && <FlashSaleBadge className="absolute top-4 left-4 z-10" />}
             {videoId ? (
               <div className="relative aspect-video">
                 <iframe
@@ -142,6 +150,13 @@ export const GameDetails: React.FC = () => {
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {game.Game_Title}
             </h1>
+              {/* Flash sale indicator - made clickable to go to Flash Sale page */}
+              {isEligible && (
+                <Link to="/flash-sale" className="inline-flex items-center mb-4 bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-md hover:from-red-700 hover:to-orange-600 transition-colors">
+                  <Zap size={16} className="mr-1" />
+                  <span>Flash Sale!</span>
+                </Link>
+              )}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                 <h3 className="font-semibold text-gray-600 dark:text-gray-400 mb-2">
@@ -229,24 +244,29 @@ export const GameDetails: React.FC = () => {
             You May Also Like
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {suggestions.map((suggestion) => (
-              <Link
-                key={suggestion.id}
-                to={`/game/${suggestion.id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex flex-col items-center overflow-hidden"
-              >
-                <div className="aspect-w-1 aspect-h-1 w-full">
-                  <img
-                    src={suggestion.image_url_medium}
-                    alt={suggestion.Game_Title}
-                    className="object-cover rounded-md"
-                  />
-                </div>
-                <h3 className="text-center text-lg font-semibold text-gray-900 dark:text-white">
-                  {suggestion.Game_Title}
-                </h3>
-              </Link>
-            ))}
+            {suggestions.map((suggestion) => {
+              const isSuggestionEligible = isFlashSaleEligible(suggestion);
+              return (
+                <Link
+                  key={suggestion.id}
+                  to={`/game/${suggestion.id}`}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex flex-col items-center overflow-hidden relative"
+                >
+                  {/* Add flash sale badge if eligible */}
+                  {isSuggestionEligible && <FlashSaleBadge className="absolute top-2 left-2 z-10" />}
+                  <div className="aspect-w-1 aspect-h-1 w-full">
+                    <img
+                      src={suggestion.image_url_medium}
+                      alt={suggestion.Game_Title}
+                      className="object-cover rounded-md"
+                    />
+                  </div>
+                  <h3 className="text-center text-lg font-semibold text-gray-900 dark:text-white">
+                    {suggestion.Game_Title}
+                  </h3>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

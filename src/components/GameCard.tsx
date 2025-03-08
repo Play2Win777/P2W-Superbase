@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Zap } from 'lucide-react';
 import { Game } from '../types';
 import { useStore } from '../store';
+import { isFlashSaleEligible } from '../utils/gameHelpers';
 
 interface GameCardProps {
   game: Game;
@@ -12,6 +13,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
+  
+  // Check if game is eligible for flash sale
+  const isEligible = isFlashSaleEligible(game);
 
   const handleMouseEnter = () => {
     hoverTimer.current = setTimeout(() => {
@@ -34,6 +38,16 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Flash Sale Badge - Added at top left */}
+      {isEligible && (
+        <div className="absolute top-2 left-2 z-10">
+          <span className="inline-flex items-center bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+            <Zap size={12} className="mr-1" />
+            Flash Sale
+          </span>
+        </div>
+      )}
+      
       <Link to={`/game/${game.id}`}>
         <div className="relative w-full pt-[88%]">
           {showVideo && videoId ? (
