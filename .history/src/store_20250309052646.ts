@@ -14,7 +14,7 @@ interface StoreState {
     loyaltyPoints: number;
     loyaltyTier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
     setGames: (games: Game[]) => void;
-    setFilteredGames: (games: Game[]) => void;
+    setFilteredGames: (filteredGames) => void;
     setCurrentPage: (page: number) => void;
     setSearchQuery: (query: string) => void;
     setFilters: (filters: Partial<FilterState>) => void;
@@ -127,48 +127,48 @@ export const useStore = create<StoreState>()(
             getCartTotal: () => {
                 const { cart } = get();
 
-                // Separate items
+                let subtotal = 0;
+                let flashSaleDiscount = 0;
+                let volumeDiscount = 0;
+                let bundleDiscount = 0;
+
                 const bundleItems = cart.filter(item => item.isBundleItem);
                 const nonBundleItems = cart.filter(item => !item.isBundleItem);
-
-                // Calculate subtotals
-                const bundleSubtotal = bundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const subtotal = bundleSubtotal + nonBundleSubtotal;
-
-                // Calculate flash sale discount
                 const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
+
+                // Calculate Subtotal
+                cart.forEach(item => {
+                    subtotal += item.Price_to_Sell_For * item.quantity;
+                });
+
+                // Calculate Flash Sale Discount
                 const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
                 const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
                 const flashSaleActive = flashSaleEligibleCount >= 3;
-                const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
 
-                // Calculate volume discount
+                if (flashSaleActive) {
+                    flashSaleDiscount = flashSaleSubtotal * 0.25;
+                }
+
+                // Calculate Volume Discount
                 const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
                 let volumeDiscountRate = 0;
+
                 if (totalItems >= 5) volumeDiscountRate = 0.2;
                 else if (totalItems >= 3) volumeDiscountRate = 0.1;
                 else if (totalItems >= 2) volumeDiscountRate = 0.05;
 
-                let volumeDiscount = 0;
-                let bundleDiscount = 0;
-
-                // Calculate the subtotal of items that are NOT flash sale eligible
-                let nonFlashSubtotal = subtotal
-                if(flashSaleActive){
-                    nonFlashSubtotal = subtotal - flashSaleSubtotal;
-                }
-                // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
-
-                if (unbrokenBundle) {
-                    bundleDiscount = bundleSubtotal * 0.15;
-                } else {
-                    volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
+                if (totalItems >= 2) {
+                    volumeDiscount = subtotal * volumeDiscountRate;
                 }
 
-                const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
+                // Calculate Bundle Discount (Lowest Priority)
+                const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
+                 if (unbrokenBundle) {
+                     bundleDiscount = subtotal * 0.15;
+                 }
+
+                let total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
 
                 return {
                     subtotal,

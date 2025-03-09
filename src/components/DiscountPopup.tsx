@@ -1,4 +1,3 @@
-// components/DiscountPopup.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Tag, ChevronDown } from 'lucide-react';
 import { useStore } from '../store';
@@ -60,7 +59,7 @@ export const DiscountPopup: React.FC = () => {
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 mt-2 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-64">
+        <div className="absolute bottom-full right-0 mb-2 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-64">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Volume Discount</h3>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
             <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>

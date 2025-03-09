@@ -194,6 +194,7 @@ function App() {
               </main>
             }
           />
+          <Route path="/" element={<HomePage />} />
           <Route path="/game/:id" element={<GameDetails />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/flash-sale" element={<FlashSalePage />} />

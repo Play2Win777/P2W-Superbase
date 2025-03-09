@@ -159,9 +159,7 @@ export const useStore = create<StoreState>()(
                     nonFlashSubtotal = subtotal - flashSaleSubtotal;
                 }
                 // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
-
+                const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
                 if (unbrokenBundle) {
                     bundleDiscount = bundleSubtotal * 0.15;
                 } else {

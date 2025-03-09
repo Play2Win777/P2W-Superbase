@@ -153,19 +153,15 @@ export const useStore = create<StoreState>()(
                 let volumeDiscount = 0;
                 let bundleDiscount = 0;
 
-                // Calculate the subtotal of items that are NOT flash sale eligible
-                let nonFlashSubtotal = subtotal
-                if(flashSaleActive){
-                    nonFlashSubtotal = subtotal - flashSaleSubtotal;
-                }
-                // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
+                const nonFlashSubtotal = subtotal - flashSaleDiscount;
 
+                // Apply bundle discount if the bundle is intact
+                const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
                 if (unbrokenBundle) {
                     bundleDiscount = bundleSubtotal * 0.15;
                 } else {
-                    volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
+                    // volumeDiscount = bundleSubtotal * volumeDiscountRate;
+                    volumeDiscount = flashSaleActive ? nonFlashSubtotal * volumeDiscountRate : subtotal * volumeDiscountRate;
                 }
 
                 const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;

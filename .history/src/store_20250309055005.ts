@@ -127,48 +127,47 @@ export const useStore = create<StoreState>()(
             getCartTotal: () => {
                 const { cart } = get();
 
-                // Separate items
+                let subtotal = 0;
+                let flashSaleDiscount = 0;
+                let volumeDiscount = 0;
+                let bundleDiscount = 0;
+
                 const bundleItems = cart.filter(item => item.isBundleItem);
                 const nonBundleItems = cart.filter(item => !item.isBundleItem);
+                const flashSaleItems = cart.filter(item => item.isFlashSaleEligible);
 
-                // Calculate subtotals
-                const bundleSubtotal = bundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const subtotal = bundleSubtotal + nonBundleSubtotal;
+                // Calculate Subtotal
+                cart.forEach(item => {
+                    subtotal += item.Price_to_Sell_For * item.quantity;
+                });
 
-                // Calculate flash sale discount
-                const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
-                const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
-                const flashSaleActive = flashSaleEligibleCount >= 3;
-                const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
+                const flashSaleActive = flashSaleItems.length >= 3;
+                // If flash sale is not active nonFlashSubtotal should be the entire subtotal;
+                let nonFlashSubtotal = subtotal;
+                if (flashSaleActive) {
+                     flashSaleItems.forEach(item => {
+                         flashSaleDiscount += item.Price_to_Sell_For * 0.25;
+                     });
+                     nonFlashSubtotal = subtotal - flashSaleDiscount; // Adjust after applying flash sale
+                 }
 
-                // Calculate volume discount
+                // Calculate Volume Discount
                 const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
                 let volumeDiscountRate = 0;
+
                 if (totalItems >= 5) volumeDiscountRate = 0.2;
                 else if (totalItems >= 3) volumeDiscountRate = 0.1;
                 else if (totalItems >= 2) volumeDiscountRate = 0.05;
 
-                let volumeDiscount = 0;
-                let bundleDiscount = 0;
+                volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
 
-                // Calculate the subtotal of items that are NOT flash sale eligible
-                let nonFlashSubtotal = subtotal
-                if(flashSaleActive){
-                    nonFlashSubtotal = subtotal - flashSaleSubtotal;
-                }
-                // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
+                // Calculate Bundle Discount (Lowest Priority)
+                const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
+                 if (unbrokenBundle) {
+                     bundleDiscount = subtotal * 0.15;
+                 }
 
-                if (unbrokenBundle) {
-                    bundleDiscount = bundleSubtotal * 0.15;
-                } else {
-                    volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
-                }
-
-                const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
+                let total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
 
                 return {
                     subtotal,
@@ -176,7 +175,7 @@ export const useStore = create<StoreState>()(
                     volumeDiscount,
                     bundleDiscount,
                     flashSaleActive,
-                    flashSaleEligibleCount,
+                    flashSaleEligibleCount: flashSaleItems.length,
                     total
                 };
             }

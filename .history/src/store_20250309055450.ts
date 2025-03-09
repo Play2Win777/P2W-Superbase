@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware'; // ✅ Added persistence
 import { CartItem, FilterState, Game } from './types';
 import { fetchGames } from './api';
 import { isFlashSaleEligible } from './utils/gameHelpers';
 
+// Update the StoreState interface to include persistence and ensure cart stability
 interface StoreState {
     games: Game[];
     filteredGames: Game[];
@@ -33,33 +34,11 @@ interface StoreState {
     };
 }
 
+// ✅ Wrapped store with `persist` to keep cart and loyalty data after reloads
 export const useStore = create<StoreState>()(
     persist(
         (set, get) => ({
-            games: [],
-            filteredGames: [],
-            currentPage: 1,
-            searchQuery: '',
-            filters: {
-                platform: '',
-                genre: '',
-                subGenre: '',
-                gameModes: [],
-                priceRange: { min: 10, max: 60 },
-            },
             cart: [],
-            loyaltyPoints: 0,
-            loyaltyTier: 'Bronze',
-
-            setGames: (games) => set({ games }),
-            setFilteredGames: (filteredGames) => set({ filteredGames }),
-            setCurrentPage: (page) => set({ currentPage: page }),
-            setSearchQuery: (query) => set({ searchQuery: query }),
-            setFilters: (filters) =>
-                set((state) => ({
-                    filters: { ...state.filters, ...filters },
-                })),
-
             addToCart: (game) =>
                 set((state) => {
                     const existingItem = state.cart.find((item) => item.id === game.id);
@@ -95,7 +74,7 @@ export const useStore = create<StoreState>()(
                                 Price_to_Sell_For: game.Price_to_Sell_For,
                                 quantity: 1,
                                 isFlashSaleEligible: isEligible,
-                                isBundleItem: game.isBundleItem || false,
+                                isBundleItem: game.isBundleItem || false, // ✅ Ensure `isBundleItem` is not undefined
                                 image_url_medium: game.image_url_medium,
                             },
                         ],
@@ -153,19 +132,17 @@ export const useStore = create<StoreState>()(
                 let volumeDiscount = 0;
                 let bundleDiscount = 0;
 
-                // Calculate the subtotal of items that are NOT flash sale eligible
-                let nonFlashSubtotal = subtotal
-                if(flashSaleActive){
-                    nonFlashSubtotal = subtotal - flashSaleSubtotal;
-                }
-                // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
+                const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
 
                 if (unbrokenBundle) {
                     bundleDiscount = bundleSubtotal * 0.15;
                 } else {
-                    volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
+                    volumeDiscount = bundleSubtotal * volumeDiscountRate;
+
+                    // Apply volume discount to normal games only
+                    const normalItems = nonBundleItems.filter(item => !item.isFlashSaleEligible);
+                    const normalSubtotal = normalItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
+                    volumeDiscount += normalSubtotal * volumeDiscountRate;
                 }
 
                 const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
@@ -180,13 +157,15 @@ export const useStore = create<StoreState>()(
                     total
                 };
             }
+
         }),
+
         {
-            name: 'game-store',
+            name: 'game-store', // ✅ Unique key for local storage
             partialize: (state) => ({
-                cart: state.cart,
-                loyaltyPoints: state.loyaltyPoints,
-                loyaltyTier: state.loyaltyTier,
+                cart: state.cart, // ✅ Persist cart
+                loyaltyPoints: state.loyaltyPoints, // ✅ Persist loyalty points
+                loyaltyTier: state.loyaltyTier, // ✅ Persist loyalty tier
             }),
         }
     )

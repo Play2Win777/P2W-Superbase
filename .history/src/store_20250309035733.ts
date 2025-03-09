@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware'; // ✅ Added persistence
 import { CartItem, FilterState, Game } from './types';
 import { fetchGames } from './api';
 import { isFlashSaleEligible } from './utils/gameHelpers';
 
+// Update the StoreState interface to include persistence and ensure cart stability
 interface StoreState {
     games: Game[];
     filteredGames: Game[];
@@ -33,6 +34,7 @@ interface StoreState {
     };
 }
 
+// ✅ Wrapped store with `persist` to keep cart and loyalty data after reloads
 export const useStore = create<StoreState>()(
     persist(
         (set, get) => ({
@@ -60,6 +62,7 @@ export const useStore = create<StoreState>()(
                     filters: { ...state.filters, ...filters },
                 })),
 
+            // ✅ Persisting cart & loyalty points
             addToCart: (game) =>
                 set((state) => {
                     const existingItem = state.cart.find((item) => item.id === game.id);
@@ -95,7 +98,7 @@ export const useStore = create<StoreState>()(
                                 Price_to_Sell_For: game.Price_to_Sell_For,
                                 quantity: 1,
                                 isFlashSaleEligible: isEligible,
-                                isBundleItem: game.isBundleItem || false,
+                                isBundleItem: game.isBundleItem || false, // ✅ Ensure `isBundleItem` is not undefined
                                 image_url_medium: game.image_url_medium,
                             },
                         ],
@@ -125,69 +128,53 @@ export const useStore = create<StoreState>()(
             },
 
             getCartTotal: () => {
-                const { cart } = get();
-
-                // Separate items
-                const bundleItems = cart.filter(item => item.isBundleItem);
-                const nonBundleItems = cart.filter(item => !item.isBundleItem);
-
-                // Calculate subtotals
-                const bundleSubtotal = bundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const subtotal = bundleSubtotal + nonBundleSubtotal;
-
-                // Calculate flash sale discount
-                const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
-                const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-                const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
-                const flashSaleActive = flashSaleEligibleCount >= 3;
-                const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
-
-                // Calculate volume discount
-                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                let volumeDiscountRate = 0;
-                if (totalItems >= 5) volumeDiscountRate = 0.2;
-                else if (totalItems >= 3) volumeDiscountRate = 0.1;
-                else if (totalItems >= 2) volumeDiscountRate = 0.05;
-
-                let volumeDiscount = 0;
-                let bundleDiscount = 0;
-
-                // Calculate the subtotal of items that are NOT flash sale eligible
-                let nonFlashSubtotal = subtotal
-                if(flashSaleActive){
-                    nonFlashSubtotal = subtotal - flashSaleSubtotal;
-                }
-                // Apply bundle discount if the bundle is intact
-                 //const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
-                const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
-
-                if (unbrokenBundle) {
-                    bundleDiscount = bundleSubtotal * 0.15;
-                } else {
-                    volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
-                }
-
-                const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
-
-                return {
-                    subtotal,
-                    flashSaleDiscount,
-                    volumeDiscount,
-                    bundleDiscount,
-                    flashSaleActive,
-                    flashSaleEligibleCount,
-                    total
-                };
-            }
-        }),
-        {
-            name: 'game-store',
-            partialize: (state) => ({
-                cart: state.cart,
-                loyaltyPoints: state.loyaltyPoints,
-                loyaltyTier: state.loyaltyTier,
-            }),
-        }
+              const { cart } = get();
+          
+              // Separate items
+              const bundleItems = cart.filter(item => item.isBundleItem);
+              const nonBundleItems = cart.filter(item => !item.isBundleItem);
+          
+              // Calculate subtotals
+              const bundleSubtotal = bundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
+              const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
+              const subtotal = bundleSubtotal + nonBundleSubtotal;
+          
+              // Calculate flash sale discount
+              const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
+              const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
+              const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
+              const flashSaleActive = flashSaleEligibleCount >= 3;
+              const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
+          
+              // Calculate volume discount
+              const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+              let volumeDiscountRate = 0;
+              if (totalItems >= 5) volumeDiscountRate = 0.2;
+              else if (totalItems >= 3) volumeDiscountRate = 0.1;
+              else if (totalItems >= 2) volumeDiscountRate = 0.05;
+          
+              let volumeDiscount = 0;
+              let bundleDiscount = 0;
+          
+              // Apply bundle discount if the bundle is intact
+              const unbrokenBundle = bundleItems.length > 0 && totalItems === bundleItems.length;
+              if (unbrokenBundle) {
+                  bundleDiscount = bundleSubtotal * 0.15;
+              } else {
+                  volumeDiscount = bundleSubtotal * volumeDiscountRate
+              }
+          
+              const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
+          
+              return {
+                  subtotal,
+                  flashSaleDiscount,
+                  volumeDiscount,
+                  bundleDiscount,
+                  flashSaleActive,
+                  flashSaleEligibleCount,
+                  total
+              };
+          }
     )
 );

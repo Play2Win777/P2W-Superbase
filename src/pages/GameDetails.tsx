@@ -27,10 +27,13 @@ const GameBundles: React.FC<{ currentGame: any }> = ({ currentGame }) => {
   const savings = originalPrice - bundlePrice;
   
   const handleAddBundle = () => {
-    // Add all games in bundle to cart
-    relatedGames.forEach(game => addToCart(game));
-    addToCart(currentGame);
+    // Add all games in bundle to cart with isBundleItem: true
+    relatedGames.forEach((game) =>
+      addToCart({ ...game, isBundleItem: true }) // Mark as bundle item
+    );
+    addToCart({ ...currentGame, isBundleItem: true }); // Mark as bundle item
   };
+
   
   return (
     <div className="mt-8 border border-purple-200 dark:border-purple-900 p-4 rounded-lg">

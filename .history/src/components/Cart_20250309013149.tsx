@@ -212,10 +212,7 @@ export const Cart: React.FC = () => {
             {/* Show bundle discount if applicable */}
             {bundleDiscount > 0 && (
               <div className="flex justify-between items-center mb-2 text-blue-600">
-                <span className="flex items-center">
-                  <Zap size={14} className="mr-1" />
-                  Bundle Discount (15%):
-                </span>
+                <span>Bundle Discount (15%)</span>
                 <span>-${bundleDiscount.toFixed(2)}</span>
               </div>
             )}
