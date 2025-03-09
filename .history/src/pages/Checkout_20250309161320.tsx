@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { MessageCircle, CreditCard, ArrowLeft, Zap, Info, Truck, X, Sparkles, Check } from 'lucide-react';
@@ -9,8 +9,9 @@ export const Checkout: React.FC = () => {
  const { cart, removeFromCart, updateCartQuantity, getCartTotal, games, clearCart } = useStore();
  const [orderComplete, setOrderComplete] = useState(false);
  const [showFlashSaleInfo, setShowFlashSaleInfo] = useState(false);
- const [isWhatsAppClicked, setIsWhatsAppClicked] = useState(false); // New state for WhatsApp button
- const [isCreditCardClicked, setIsCreditCardClicked] = useState(false); // New state for Credit Card button
+ const [isWhatsAppClicked, setIsWhatsAppClicked] = useState(false);
+ const [isCreditCardClicked, setIsCreditCardClicked] = useState(false);
+ const [recommendedGames, setRecommendedGames] = useState([]); // Initialize as an empty array
 
 
  // Customer information state
@@ -49,43 +50,31 @@ export const Checkout: React.FC = () => {
  const finalTotal = total + shippingCost;
 
 
- // Get the platform of the first game in the cart
- const firstGamePlatform = cart.length > 0 ? cart[0].Platform : null;
+ useEffect(() => {
+ if (cart.length > 0 && games.length > 0) {
+ const firstGamePlatform = cart[0].Platform;
 
 
- // Filter games from the same platform as the first game in the cart
- const recommendedGames = firstGamePlatform
- ? games.filter(
+ if (firstGamePlatform) {
+ const filteredGames = games.filter(
  (game) =>
- game.Platform === firstGamePlatform && // Same platform
- !cart.some((item) => item.id === game.id) // Exclude games already in the cart
- ).slice(0, 3) // Limit to 3 games
- : [];
+ game.Platform === firstGamePlatform &&
+ !cart.some((item) => item.id === game.id)
+ ).slice(0, 3);
+ setRecommendedGames(filteredGames);
+ } else {
+ setRecommendedGames([]); // No games if firstGamePlatform is null
+ }
+ } else {
+ setRecommendedGames([]); // No games if cart or games are empty
+ }
+ }, [cart, games]);
 
 
  // Navigation to game details
  const goToGameDetails = (gameId: string | number) => {
  navigate(`/game/${gameId}`);
  };
-
-
- // If cart is empty, show a message and redirect button
- if (cart.length === 0) {
- return (
- <div className="max-w-4xl mx-auto p-6">
- <div className="text-center py-12">
- <h2 className="text-2xl font-bold mb-4 dark:text-white">Your cart is empty</h2>
- <p className="text-gray-600 dark:text-gray-300 mb-6">Add some games to your cart before checkout.</p>
- <button 
- onClick={() => navigate('/')}
- className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600"
- >
- Browse Games
- </button>
- </div>
- </div>
- );
- }
 
 
  // Format and send WhatsApp message

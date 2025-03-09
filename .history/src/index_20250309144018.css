@@ -66,9 +66,9 @@
 
 
  /* Icon Container Style */
- .gamecard-icon-container {
- width: 5em; /* Adjust as needed */
- height: 2em; /* Adjust as needed */
+ .icon-container {
+ width: 50px; /* Adjust as needed */
+ height: 20px; /* Adjust as needed */
  display: flex;
  align-items: center;
  justify-content: center;

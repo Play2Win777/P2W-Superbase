@@ -59,7 +59,7 @@ export const Checkout: React.FC = () => {
  (game) =>
  game.Platform === firstGamePlatform && // Same platform
  !cart.some((item) => item.id === game.id) // Exclude games already in the cart
- ).slice(0, 3) // Limit to 3 games
+ )
  : [];
 
 
@@ -147,6 +147,8 @@ export const Checkout: React.FC = () => {
  setIsWhatsAppClicked(false);
  window.open(whatsappUrl, '_blank');
  }, 1000);
+
+
  };
 
 
@@ -422,7 +424,7 @@ export const Checkout: React.FC = () => {
  Add more games from the <strong>{firstGamePlatform}</strong> platform to unlock discounts and free shipping!
  </p>
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
- {recommendedGames.map((game) => (
+ {recommendedGames.slice(0, 3).map((game) => (
  <div
  key={game.id}
  className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg cursor-pointer hover:shadow-lg transition-shadow"
@@ -516,7 +518,9 @@ export const Checkout: React.FC = () => {
  Send your order details via WhatsApp and arrange payment in person.
  </p>
  <button
- onClick={sendWhatsAppOrder}
+ onClick={() => {
+ sendWhatsAppOrder();
+ }}
  className={`w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center justify-center gap-2 ${isWhatsAppClicked ? 'bg-green-700 cursor-not-allowed' : ''}`}
  disabled={isWhatsAppClicked}
  >
@@ -532,7 +536,9 @@ export const Checkout: React.FC = () => {
  <CreditCard size={20} />
  Credit Card Payment
  </h3>
- <form onSubmit={handleSubmit}>
+ <form onSubmit={(e) => {
+ handleSubmit(e);
+ }}>
  <div className="mb-4">
  <label className="block text-gray-700 dark:text-gray-300 mb-2">Card Number</label>
  <div className="relative">

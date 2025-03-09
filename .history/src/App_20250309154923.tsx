@@ -161,7 +161,7 @@
   onClick={() => window.location.href = '/'} 
   className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
  >
-  <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
+  <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-14 mr-10" /> {/* Adjust size as needed */}
  </h1>
   </div>
  

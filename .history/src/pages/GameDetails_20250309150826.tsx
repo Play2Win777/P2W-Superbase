@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react'; // Import useState
+import React, { useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Sparkles, Check } from 'lucide-react'; // Import Check icon
+import { ArrowLeft, ShoppingCart, Sparkles } from 'lucide-react';
 import { useStore } from '../store';
 import { Zap } from 'lucide-react';
 import { FlashSaleBadge } from '../components/FlashSaleBadge';
@@ -74,7 +74,6 @@ export const GameDetails: React.FC = () => {
  const { id } = useParams<{ id: string }>();
  const { games, addToCart, fetchGames } = useStore();
  const { darkMode } = useTheme(); // Use the useTheme hook
- const [isClicked, setIsClicked] = useState(false); // New state for click feedback
 
 
  useEffect(() => {
@@ -127,15 +126,6 @@ export const GameDetails: React.FC = () => {
  };
 
 
- const handleClick = () => {
- addToCart(game);
- setIsClicked(true);
- setTimeout(() => {
- setIsClicked(false);
- }, 1000); // Reset after 1 second
- };
-
-
  return (
  <div className="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
  <Link
@@ -162,13 +152,10 @@ export const GameDetails: React.FC = () => {
  allowFullScreen
  />
  <button
- onClick={handleClick}
- className={`absolute bottom-2 right-2 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors flex items-center neon-border neon-pulse ${
- isClicked ? 'bg-green-600 cursor-not-allowed' : ''
- }`}
- disabled={isClicked}
+ onClick={() => addToCart(game)}
+ className="absolute bottom-2 right-2 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors flex items-center neon-border neon-pulse"
  >
- {isClicked ? <Check size={20} className="mr-2" /> : <ShoppingCart size={20} className="mr-2" />}
+ <ShoppingCart size={20} className="mr-2" />
  ${game.Price_to_Sell_For}
  </button>
  </div>
@@ -180,13 +167,10 @@ export const GameDetails: React.FC = () => {
  className="w-full rounded-lg"
  />
  <button
- onClick={handleClick}
- className={`absolute bottom-2 right-2 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors flex items-center neon-border neon-pulse ${
- isClicked ? 'bg-green-600 cursor-not-allowed' : ''
- }`}
- disabled={isClicked}
+ onClick={() => addToCart(game)}
+ className="absolute bottom-2 right-2 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors flex items-center neon-border neon-pulse"
  >
- {isClicked ? <Check size={20} className="mr-2" /> : <ShoppingCart size={20} className="mr-2" />}
+ <ShoppingCart size={20} className="mr-2" />
  ${game.Price_to_Sell_For}
  </button>
  </div>

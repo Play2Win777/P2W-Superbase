@@ -1,7 +1,7 @@
  // GameCard.tsx
- import React, { useState, useRef } from 'react';
+ import React, { useState, useRef, useContext, useEffect } from 'react';
  import { Link } from 'react-router-dom';
- import { ShoppingCart, Zap, Check } from 'lucide-react'; // Import Check icon
+ import { ShoppingCart, Zap } from 'lucide-react';
  import { Game } from '../types';
  import { useStore } from '../store';
  import { isFlashSaleEligible } from '../utils/gameHelpers';
@@ -18,7 +18,6 @@
   const hoverTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
   const { darkMode } = useTheme(); // Use the useTheme hook
-  const [isClicked, setIsClicked] = useState(false); // New state for click feedback
   
   // Check if game is eligible for flash sale
   const isEligible = isFlashSaleEligible(game);
@@ -60,15 +59,6 @@
   const themeSuffix = darkMode ? '' : '_black';
   // Fixed: _black for dark mode
   return `/assets/icons/${baseName}${themeSuffix}.png`;
-  };
- 
-
-  const handleClick = () => {
-  addToCart(game);
-  setIsClicked(true);
-  setTimeout(() => {
-  setIsClicked(false);
-  }, 1000); // Reset after 1 second
   };
  
 
@@ -143,13 +133,10 @@
   </div>
   </Link>
   <button
-  onClick={handleClick} // Use handleClick function
-  className={`absolute top-2 right-2 p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors ${
-  isClicked ? 'bg-green-600 cursor-not-allowed' : '' // Change color when clicked
-  }`}
-  disabled={isClicked} // Disable button while clicked
+  onClick={() => addToCart(game)}
+  className="absolute top-2 right-2 p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors"
   >
-  {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />} {/* Show checkmark when clicked */}
+  <ShoppingCart size={20} className="group-hover:neon-wiggle" />
   </button>
   </div>
   );

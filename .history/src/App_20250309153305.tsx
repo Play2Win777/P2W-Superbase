@@ -154,14 +154,15 @@
   <Router>
   <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
   <header className="bg-white dark:bg-gray-800 shadow-sm">
-  <div className="container mx-auto px-4 py-1">
+  <div className="container mx-auto px-4 py-4">
   <div className="flex justify-between items-center">
   <div className="flex items-center gap-2">
+  <GameBit className="text-purple-500 md:size-8 size-6" />
   <h1 
   onClick={() => window.location.href = '/'} 
   className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
  >
-  <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
+  <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-12 mr-6" /> {/* Adjust size as needed */}
  </h1>
   </div>
  
