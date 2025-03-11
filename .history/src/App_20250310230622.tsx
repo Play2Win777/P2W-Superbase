@@ -63,7 +63,7 @@ const StorylaneButton = () => {
           padding_bottom: 'calc(49.95% + 25px)'
         });
       }}
-      className="bg-green-400 text-white font-bold py-1 px-1 rounded-xl ml-1"
+      className="bg-green-700 text-white font-bold py-0 px-0 rounded-lg ml-1"
     >
       Click Me
     </button>
@@ -120,7 +120,7 @@ function App() {
     <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
       <Router>
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-          <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+          <header className="bg-white dark:bg-gray-800 shadow-sm">
             <div className="container mx-auto px-4 py-1 flex justify-between items-center">
               <h1 onClick={() => window.location.href = '/'} className="text-2xl font-bold text-gray-900 dark:text-white cursor-pointer flex items-center">
                 <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" />

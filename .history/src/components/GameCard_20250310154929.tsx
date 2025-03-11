@@ -1,11 +1,12 @@
  // GameCard.tsx
  import React, { useState, useRef } from 'react';
  import { Link } from 'react-router-dom';
- import { ShoppingCart, Zap, Check } from 'lucide-react'; // Import Check icon
- import { Game } from '../types';
+ import { ShoppingCart, Zap, Check } from 'lucide-react';
+ import { Game } from './types';
  import { useStore } from '../store';
- import { isFlashSaleEligible } from '../utils/gameHelpers';
- import { useTheme } from '../context/ThemeContext'; // Import useTheme
+ import { isFlashSaleEligible } from './utils/gameHelpers';
+ import { useTheme } from './context/ThemeContext';
+ import { Toast } from './Toast'; // Import Toast component
  
 
  interface GameCardProps {
@@ -17,8 +18,9 @@
   const [showVideo, setShowVideo] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
-  const { darkMode } = useTheme(); // Use the useTheme hook
-  const [isClicked, setIsClicked] = useState(false); // New state for click feedback
+  const { darkMode } = useTheme();
+  const [isClicked, setIsClicked] = useState(false);
+  const [toast, setToast] = useState<JSX.Element | null>(null); // Toast state
   
   // Check if game is eligible for flash sale
   const isEligible = isFlashSaleEligible(game);
@@ -66,9 +68,19 @@
   const handleClick = () => {
   addToCart(game);
   setIsClicked(true);
+  setToast(
+  <Toast
+  message={`${game.Game_Title} added to cart!`}
+  action="Checkout"
+  onAction={() => {
+  window.location.href = '/checkout'; // Navigate to checkout
+  }}
+  />
+  );
   setTimeout(() => {
   setIsClicked(false);
-  }, 1000); // Reset after 1 second
+  setToast(null); // Clear the toast
+  }, 2000); // Reset after 2 seconds
   };
  
 
@@ -150,7 +162,9 @@
   disabled={isClicked} // Disable button while clicked
   >
   {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />} {/* Show checkmark when clicked */}
+  ADD
   </button>
+  {toast} {/* Render the toast */}
   </div>
   );
  };

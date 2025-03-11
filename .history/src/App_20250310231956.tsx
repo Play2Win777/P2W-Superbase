@@ -63,7 +63,7 @@ const StorylaneButton = () => {
           padding_bottom: 'calc(49.95% + 25px)'
         });
       }}
-      className="bg-green-400 text-white font-bold py-1 px-1 rounded-xl ml-1"
+      className="bg-green-400 text-white font-bold py-0 px-0 rounded-xl ml-1"
     >
       Click Me
     </button>
