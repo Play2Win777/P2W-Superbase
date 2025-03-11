@@ -1,4 +1,3 @@
-// App.tsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Gamepad as GameBit, Search } from 'lucide-react';
@@ -11,7 +10,7 @@ import { GameDetails } from './pages/GameDetails';
 import { Checkout } from './pages/Checkout';
 import { FlashSalePage } from './pages/FlashSalePage';
 import { DiscountPopup } from './components/DiscountPopup';
-import { ThemeContext } from './context/ThemeContext';
+import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 
 // SEARCH BAR COMPONENT
 const SearchBar = () => {
@@ -96,12 +95,10 @@ function App() {
     setGames,
     setFilteredGames,
     setCurrentPage,
-    showFilters,
-    setShowFilters,
-    filters,
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false); // Track if the user is scrolling
 
   useEffect(() => {
@@ -138,13 +135,6 @@ function App() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [showFilters, isScrolling]);
-
-  // Open filters when platform filter is set
-  useEffect(() => {
-    if (filters.platform) {
-      setShowFilters(true); // Open filters when platform is set
-    }
-  }, [filters.platform]); // Watch for changes to filters.platform
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
@@ -186,7 +176,7 @@ function App() {
                     onClick={() => window.location.href = '/'} 
                     className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
                   >
-                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" />
+                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
                   </h1>
                 </div>
 

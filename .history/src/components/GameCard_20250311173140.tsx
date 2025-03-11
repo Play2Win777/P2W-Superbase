@@ -28,7 +28,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const handleMouseEnter = () => {
     hoverTimer.current = setTimeout(() => {
       setShowVideo(true);
-    }, 2000);
+    }, 2000); // Show video after 2 seconds on hover
   };
 
   const handleMouseLeave = () => {
@@ -38,8 +38,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setShowVideo(false);
   };
 
-  const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
+  const videoId = game.Youtube_link?.split('v=')[1];
 
+  // Updated platform icon mapping with proper typing
   const getPlatformIcon = (platform: string): string => {
     const platformMap: Record<string, string> = {
       'Nintendo 3DS': '3ds',
@@ -53,7 +54,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     };
 
     const baseName = platformMap[platform] || 'default';
-    const themeSuffix = darkMode ? '' : '_black';
+    const themeSuffix = darkMode ? '' : '_black'; // Fixed: _black for dark mode
     return `/assets/icons/${baseName}${themeSuffix}.png`;
   };
 
@@ -62,15 +63,24 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setIsClicked(true);
     setTimeout(() => {
       setIsClicked(false);
-    }, 1000);
+    }, 1000); // Reset after 1 second
   };
 
+  // Add click handler for platform icon
   const handlePlatformClick = (e: React.MouseEvent, platform: string) => {
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation(); // Stop event propagation
+    e.preventDefault(); // Prevent default link behavior
+
+    // 1. Navigates to the home page
     navigate('/');
+
+    // 2. Scrolls to the top of the page
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 3. Opens the filters section
     setShowFilters(true);
+
+    // 4. Sets the platform filter
     setFilters({ platform });
   };
 
@@ -80,8 +90,12 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Flash Sale Badge - Make it clickable */}
       {isEligible && (
-        <Link to={`/flash-sale?platform=${game.Platform}`} className="absolute top-2 left-2 z-10">
+        <Link
+          to={`/flash-sale?platform=${game.Platform}`}
+          className="absolute top-2 left-2 z-10"
+        >
           <span className="inline-flex items-center bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
             <Zap size={12} className="mr-1" />
             Flash Sale
@@ -90,17 +104,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       )}
 
       <Link to={`/game/${game.id}`}>
-        <div className="relative w-full pt-[56.25%]">
+        <div className="relative w-full pt-[88%]">
           {showVideo && videoId ? (
-            <div className="absolute inset-0 w-full h-full">
-              <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`}
-                className="absolute inset-0 w-full h-full"
-                style={{ aspectRatio: '16/9' }}
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-            </div>
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
           ) : (
             <img
               src={game.image_url_medium}
@@ -113,6 +124,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex gap-2 items-center">
+                  {/* Clickable platform icon */}
                   <div 
                     className="gamecard-icon-container cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={(e) => handlePlatformClick(e, game.Platform)}
@@ -121,18 +133,28 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
                       src={getPlatformIcon(game.Platform)}
                       alt={game.Platform}
                       className="h-6 w-auto rounded"
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                      }}
                     />
                   </div>
                   <span className="px-2 py-1 bg-blue-500/80 rounded text-sm">
-                    {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
+                    {`${game.Genre}${
+                      game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''
+                    }`}
                   </span>
                 </div>
-                <span className="text-2xl font-bold">${game.Price_to_Sell_For}</span>
+                <span className="text-2xl font-bold">
+                  ${game.Price_to_Sell_For}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-amber-400 font-bold">★</span>
-                <span className="font-semibold">Metacritic: {game.Metacritic_Score}/100</span>
+                <span className="font-semibold">
+                  Metacritic: {game.Metacritic_Score}/100
+                </span>
               </div>
             </div>
           </div>

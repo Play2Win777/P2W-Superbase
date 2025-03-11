@@ -96,12 +96,11 @@ function App() {
     setGames,
     setFilteredGames,
     setCurrentPage,
-    showFilters,
-    setShowFilters,
-    filters,
+    filters, // Add filters
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false); // Track if the user is scrolling
 
   useEffect(() => {
@@ -142,9 +141,9 @@ function App() {
   // Open filters when platform filter is set
   useEffect(() => {
     if (filters.platform) {
-      setShowFilters(true); // Open filters when platform is set
+      setShowFilters(true);
     }
-  }, [filters.platform]); // Watch for changes to filters.platform
+  }, [filters.platform]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
@@ -186,7 +185,7 @@ function App() {
                     onClick={() => window.location.href = '/'} 
                     className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
                   >
-                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" />
+                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
                   </h1>
                 </div>
 

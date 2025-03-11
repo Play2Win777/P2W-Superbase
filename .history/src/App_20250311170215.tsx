@@ -98,7 +98,7 @@ function App() {
     setCurrentPage,
     showFilters,
     setShowFilters,
-    filters,
+    filters, // Add filters
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);

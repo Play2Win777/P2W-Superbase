@@ -1,4 +1,3 @@
-// App.tsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Gamepad as GameBit, Search } from 'lucide-react';
@@ -11,7 +10,7 @@ import { GameDetails } from './pages/GameDetails';
 import { Checkout } from './pages/Checkout';
 import { FlashSalePage } from './pages/FlashSalePage';
 import { DiscountPopup } from './components/DiscountPopup';
-import { ThemeContext } from './context/ThemeContext';
+import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 
 // SEARCH BAR COMPONENT
 const SearchBar = () => {
@@ -96,13 +95,10 @@ function App() {
     setGames,
     setFilteredGames,
     setCurrentPage,
-    showFilters,
-    setShowFilters,
-    filters,
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
-  const [isScrolling, setIsScrolling] = useState(false); // Track if the user is scrolling
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const loadGames = async () => {
@@ -126,7 +122,7 @@ function App() {
   // Add scroll event listener to close filters when scrolling down
   useEffect(() => {
     const handleScroll = () => {
-      if (showFilters && window.scrollY > 100 && isScrolling) { // Only close filters if user is actively scrolling
+      if (showFilters && window.scrollY > 100) { // Adjust the threshold as needed
         setShowFilters(false);
       }
     };
@@ -137,14 +133,7 @@ function App() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [showFilters, isScrolling]);
-
-  // Open filters when platform filter is set
-  useEffect(() => {
-    if (filters.platform) {
-      setShowFilters(true); // Open filters when platform is set
-    }
-  }, [filters.platform]); // Watch for changes to filters.platform
+  }, [showFilters]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
@@ -155,13 +144,7 @@ function App() {
 
     // Scroll to the top of the page when filters are opened
     if (!showFilters) {
-      setIsScrolling(false); // Disable auto-close temporarily
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // Re-enable auto-close after a short delay
-      setTimeout(() => {
-        setIsScrolling(true);
-      }, 1000); // Adjust the delay as needed
     }
   };
 
@@ -186,7 +169,7 @@ function App() {
                     onClick={() => window.location.href = '/'} 
                     className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
                   >
-                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" />
+                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
                   </h1>
                 </div>
 

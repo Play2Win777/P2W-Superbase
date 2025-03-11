@@ -1,4 +1,3 @@
-// App.tsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Gamepad as GameBit, Search } from 'lucide-react';
@@ -96,13 +95,13 @@ function App() {
     setGames,
     setFilteredGames,
     setCurrentPage,
-    showFilters,
-    setShowFilters,
-    filters,
+    setFilters,
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false); // Track if the user is scrolling
+  const location = useLocation(); // Use the useLocation hook
 
   useEffect(() => {
     const loadGames = async () => {
@@ -139,12 +138,13 @@ function App() {
     };
   }, [showFilters, isScrolling]);
 
-  // Open filters when platform filter is set
+  // Handle platform filter when navigating from GameCard
   useEffect(() => {
-    if (filters.platform) {
-      setShowFilters(true); // Open filters when platform is set
+    if (location.state?.platform) {
+      setFilters({ platform: location.state.platform });
+      setShowFilters(true);
     }
-  }, [filters.platform]); // Watch for changes to filters.platform
+  }, [location.state, setFilters]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
@@ -186,7 +186,7 @@ function App() {
                     onClick={() => window.location.href = '/'} 
                     className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
                   >
-                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" />
+                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-16 mr-3" /> {/* Adjust size as needed */}
                   </h1>
                 </div>
 

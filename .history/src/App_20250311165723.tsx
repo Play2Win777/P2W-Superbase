@@ -98,7 +98,6 @@ function App() {
     setCurrentPage,
     showFilters,
     setShowFilters,
-    filters,
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
@@ -138,13 +137,6 @@ function App() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [showFilters, isScrolling]);
-
-  // Open filters when platform filter is set
-  useEffect(() => {
-    if (filters.platform) {
-      setShowFilters(true); // Open filters when platform is set
-    }
-  }, [filters.platform]); // Watch for changes to filters.platform
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);

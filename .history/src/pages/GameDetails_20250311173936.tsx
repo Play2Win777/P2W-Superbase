@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Sparkles, Check } from 'lucide-react';
-import { useStore } from '../store'; // Ensure this import is correct
+import { useStore } from '../store';
 import { Zap } from 'lucide-react';
 import { FlashSaleBadge } from '../components/FlashSaleBadge';
 import { isFlashSaleEligible } from '../utils/gameHelpers';
-import { useTheme } from '../context/ThemeContext'; // Ensure this import is correct
+import { useTheme } from '../context/ThemeContext';
 
 // Game Bundle Component
 const GameBundles: React.FC<{ currentGame: any }> = ({ currentGame }) => {
@@ -89,23 +89,8 @@ export const GameDetails: React.FC = () => {
   const game = games.find((g) => g.id === id);
   const isEligible = game ? isFlashSaleEligible(game) : false;
 
-  // Fallback if game is not found
   if (!game) {
-    return (
-      <div className="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-        <Link
-          to="/"
-          className="inline-flex items-center text-purple-500 hover:text-purple-600 mb-6"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Games
-        </Link>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4 dark:text-white">Game Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">The game you are looking for does not exist.</p>
-        </div>
-      </div>
-    );
+    return <div>Game not found</div>;
   }
 
   const videoId = game.Youtube_link?.split('v=')[1];

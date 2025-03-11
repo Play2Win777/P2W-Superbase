@@ -237,7 +237,7 @@ export const Cart: React.FC = () => {
               onClick={handleCheckout}
               className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
             >
-              Get Your Games
+              Send Order
             </button>
           </div>
         </div>
