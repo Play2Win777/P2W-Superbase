@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+ /* Base neon border effect with a rotating conic-gradient */
+ .neon-border {
+ position: relative;
+ border-radius: 0.5rem; /* adjust to match your element's rounding */
+ overflow: hidden; /* hide overflowing pseudo-element */
+ z-index: 0;
+ }
+ 
+ .neon-border::before {
+ content: "";
+ position: absolute;
+ inset: 0; /* cover the entire element */
+ border-radius: inherit;
+ padding: 2px; /* controls the border thickness */
+ /* Conic-gradient creates a neon green effect with transparent gaps */
+ background: conic-gradient(from 0deg, #39FF14, transparent 20%, transparent 80%, #39FF14);
+ /* Mask to show the gradient only on the border (uses the padding area) */
+ -webkit-mask: linear-gradient(white, white) content-box, linear-gradient(white, white);
+ -webkit-mask-composite: destination-out;
+ mask-composite: exclude;
+ pointer-events: none;
+ z-index: -1;
+ transform-origin: center;
+ animation: spin 6s linear infinite;
+ }
+ 
+ /* Additional neon effects – add these classes together with .neon-border as needed */
+ 
+ /* Neon Pulse: gently scales and fades the element */
+ .neon-pulse {
+ position: relative;
+ animation: pulse 2s ease-in-out infinite;
+ }
+ 
+ /* Neon Flicker: simulates a quick flicker */
+ .neon-flicker {
+ position: relative;
+ animation: flicker 1.5s linear infinite;
+ }
+ 
+ /* Neon Wiggle: adds a slight rotational movement */
+ .neon-wiggle {
+ position: relative;
+ animation: wiggle 0.6s ease-in-out infinite;
+ }
+ 
+ /* Neon Dash: animates background movement (can be combined with a background property) */
+ .neon-dash {
+ position: relative;
+ /* For this effect, you might want to set a background that works with the animation */
+ background: repeating-linear-gradient(
+ 45deg,
+ #39FF14,
+ #39FF14 10px,
+ transparent 10px,
+ transparent 20px
+ );
+ animation: dash 4s linear infinite;
+ }
+
+
+ /* Icon Container Style */
+ .icon-container {
+ width: 2.5em; /* Adjust as needed */
+ height: 1.25em; /* Adjust as needed */
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+}
+
+
+/* Keyframes Definitions */
+
+
+/* Spin keyframe for the neon-border effect */
+@keyframes spin {
+ from {
+ transform: rotate(0deg);
+ }
+ to {
+ transform: rotate(360deg);
+ }
+}
+
+
+/* Pulse keyframe: subtle scale and opacity changes */
+@keyframes pulse {
+ 0%,
+ 20% {
+ transform: scale(1);
+ opacity: 1;
+ }
+ 50% {
+ transform: scale(1.1);
+ opacity: 0.8;
+ }
+ 100% {
+ transform: scale(1);
+ opacity: 1;
+ }
+}
+
+
+/* Flicker keyframe: creates random opacity changes for a flickering effect */
+@keyframes flicker {
+ 0%,
+ 100% {
+ opacity: 1;
+ }
+ 30% {
+ opacity: 0.5;
+ }
+ 50% {
+ opacity: 0.8;
+ }
+ 70% {
+ opacity: 0.3;
+ }
+}
+
+
+/* Wiggle keyframe: rotates the element slightly back and forth */
+@keyframes wiggle {
+ 0% {
+ transform: rotate(0deg);
+ }
+ 25% {
+ transform: rotate(5deg);
+ }
+ 75% {
+ transform: rotate(-5deg);
+ }
+ 100% {
+ transform: rotate(0deg);
+ }
+}
+
+
+/* Dash keyframe: moves the background for a dynamic dashed look */
+@keyframes dash {
+ 0% {
+ background-position: 0 0;
+ }
+ 100% {
+ background-position: 100% 0;
+ }
+}
