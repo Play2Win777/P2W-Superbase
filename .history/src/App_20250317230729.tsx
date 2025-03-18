@@ -68,7 +68,7 @@ const IntroModal = ({ isOpen, onClose }) => {
               <p className="font-semibold">3. How to get your games :)</p>
               <ul className="list-disc pl-5">
                 <li>Go to your cart at the top right <ShoppingCart size={16} className="inline" /> and review your items.</li>
-                <li>Choose <strong>WhatsApp</strong> at checkout and you can pay in person in SRD.</li>
+                <li>Choose <strong>WhatsApp</strong> at checkout and you can pay in person in srd</li>
               </ul>
             </div>
           </div>
@@ -175,22 +175,13 @@ function App() {
     showFilters,
     setShowFilters,
     filters,
-    toastMessage,
-    toastDiscountInfo,
+    toastMessage, // Destructured from the store
+    toastDiscountInfo, // Destructured from the store
   } = useStore();
   
   const [darkMode, setDarkMode] = useState(true);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [showIntroModal, setShowIntroModal] = useState(false);
-
-  // Show intro modal on first visit
-  useEffect(() => {
-    const hasSeenIntro = localStorage.getItem('hasSeenIntro');
-    if (!hasSeenIntro) {
-      setShowIntroModal(true);
-      localStorage.setItem('hasSeenIntro', 'true');
-    }
-  }, []);
+  const [isScrolling, setIsScrolling] = useState(false); // Track if the user is scrolling
+  const [showIntroModal, setShowIntroModal] = useState(false); // State to control modal visibility
 
   useEffect(() => {
     const loadGames = async () => {
@@ -211,18 +202,55 @@ function App() {
     }
   }, [darkMode]);
 
+  // Add scroll event listener to close filters when scrolling down
+  useEffect(() => {
+    const handleScroll = () => {
+      if (showFilters && window.scrollY > 100 && isScrolling) { // Only close filters if user is actively scrolling
+        setShowFilters(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [showFilters, isScrolling]);
+
+  useEffect(() => {
+    // Check if user has seen intro before
+    const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+    
+    // Only show modal if they haven't seen it
+    if (!hasSeenIntro) {
+      setShowIntroModal(true);
+      localStorage.setItem('hasSeenIntro', 'true'); // Mark as seen
+    }
+  }, []); // Empty dependency array = runs once on mount
+  // Open filters when platform filter is set
+  useEffect(() => {
+    if (filters.platform) {
+      setShowFilters(true); // Open filters when platform is set
+    }
+  }, [filters.platform]); // Watch for changes to filters.platform
+
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
   };
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
+
+    // Scroll to the top of the page when filters are opened
     if (!showFilters) {
-      setIsScrolling(false);
+      setIsScrolling(false); // Disable auto-close temporarily
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Re-enable auto-close after a short delay
       setTimeout(() => {
         setIsScrolling(true);
-      }, 1000);
+      }, 1000); // Adjust the delay as needed
     }
   };
 
@@ -239,13 +267,13 @@ function App() {
     <ThemeContext.Provider value={themeValue}>
       <Router>
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-          {/* Intro Modal */}
+          {/* Add IntroModal here */}
           <IntroModal
             isOpen={showIntroModal}
             onClose={() => setShowIntroModal(false)}
           />
 
-          {/* Toast */}
+          {/* Add Toast here */}
           {toastMessage && (
             <Toast 
               message={toastMessage} 
@@ -265,10 +293,12 @@ function App() {
                   </h1>
                 </div>
 
+                {/* Split the search input and button */}
                 <div className="flex items-center w-1/2 md:w-auto">
                   <div className="mr-2 flex-grow">
                     <SearchBar />
                   </div>
+                  {/* Original filter toggle button */}
                   <button
                     onClick={toggleFilters}
                     className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg flex items-center"
@@ -277,11 +307,16 @@ function App() {
                   </button>
                 </div>
 
+                {/* Add Help Button */}
                 <button
-                  onClick={() => setShowIntroModal(true)}
+                  onClick={() => {
+                    localStorage.removeItem('hasSeenIntro');
+                    setShowIntroModal(true);
+                  }}
                   className="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors shadow-lg relative group"
                 >
                   <HelpCircle size={24} />
+                  {/* Tooltip */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     How it works
                   </div>
@@ -326,6 +361,7 @@ function App() {
             <Route path="/flash-sale" element={<FlashSalePage />} />
           </Routes>
 
+          {/* Footer with Dark Mode Toggle and DiscountPopup */}
           <Footer toggleDarkMode={themeValue.toggleDarkMode} darkMode={darkMode} />
         </div>
       </Router>
