@@ -24,36 +24,56 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setFilters: state.setFilters,
     setShowFilters: state.setShowFilters,
   }));
-  const toastMessage = useStore((state) => state.toastMessage);
-  const toastDiscountInfo = useStore((state) => state.toastDiscountInfo);
+  const [touchStartTime, setTouchStartTime] = useState(0);
+  const isInteracting = useRef(false);
 
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-  // Touch handlers for mobile autoplay
+  // Enhanced touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth > 768) return;
     
     const target = e.target as HTMLElement;
     if (target.closest('button, a')) return;
 
+    console.log('Touch started');
+    isInteracting.current = true;
+    setTouchStartTime(Date.now());
+    
     touchTimer.current = setTimeout(() => {
-      setShowVideo(true);
+      if (isInteracting.current) {
+        console.log('Touch duration reached - showing video');
+        setShowVideo(true);
+      }
     }, 1000);
   };
 
   const handleTouchEnd = () => {
     if (window.innerWidth > 768) return;
     
+    console.log('Touch ended');
+    isInteracting.current = false;
+    const touchDuration = Date.now() - touchStartTime;
+    
     if (touchTimer.current) {
       clearTimeout(touchTimer.current);
     }
-    setShowVideo(false);
+
+    if (touchDuration < 1000) {
+      console.log('Touch was too short - cancelling video');
+    }
+    
+    setTimeout(() => {
+      console.log('Hiding video');
+      setShowVideo(false);
+    }, 50);
   };
 
-  // Desktop hover handlers
+  // Enhanced mouse handlers
   const handleMouseEnter = () => {
     if (window.innerWidth > 768) {
+      console.log('Desktop hover start');
       hoverTimer.current = setTimeout(() => {
         setShowVideo(true);
       }, 2000);
@@ -62,6 +82,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
   const handleMouseLeave = () => {
     if (hoverTimer.current) {
+      console.log('Desktop hover end');
       clearTimeout(hoverTimer.current);
     }
     if (window.innerWidth > 768) {
@@ -69,7 +90,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     }
   };
 
-  // Platform icon mapping
+  // Platform icon mapping remains the same
   const getPlatformIcon = (platform: string): string => {
     const platformMap: Record<string, string> = {
       'Nintendo 3DS': '3ds',
@@ -129,12 +150,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1${
-                  window.innerWidth <= 768 ? '' : '&mute=0'
-                }`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1`}
                 className="absolute inset-0 w-full h-full"
-                style={{ aspectRatio: '16/9' }}
-                allow="autoplay; encrypted-media"
+                style={{ 
+                  aspectRatio: '16/9',
+                  pointerEvents: 'none' // Allows touch events to pass through
+                }}
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
             </div>
