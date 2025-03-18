@@ -13,6 +13,8 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+  const [hasVideoError, setHasVideoError] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const touchTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
@@ -24,50 +26,55 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setFilters: state.setFilters,
     setShowFilters: state.setShowFilters,
   }));
-  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const videoRef = useRef<HTMLIFrameElement>(null);
 
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
   // Mobile touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.innerWidth > 768) return;
+    if (window.innerWidth > 768 || hasVideoError) return;
+    
     const target = e.target as HTMLElement;
     if (target.closest('button, a')) return;
 
+    setIsLoadingVideo(true);
     touchTimer.current = setTimeout(() => {
       setShowVideo(true);
-      setActiveVideo(videoId || null);
+      setIsLoadingVideo(false);
     }, 1000);
   };
 
   const handleTouchEnd = () => {
     if (window.innerWidth > 768) return;
-    if (touchTimer.current) clearTimeout(touchTimer.current);
+    
+    if (touchTimer.current) {
+      clearTimeout(touchTimer.current);
+    }
+    setIsLoadingVideo(false);
   };
 
-  // Reset video when touching other elements
-  const handleTouchMove = () => {
-    if (window.innerWidth > 768) return;
+  const handleTouchCancel = () => {
     setShowVideo(false);
-    setActiveVideo(null);
+    setIsLoadingVideo(false);
+    if (touchTimer.current) clearTimeout(touchTimer.current);
   };
 
   // Desktop hover handlers
   const handleMouseEnter = () => {
-    if (window.innerWidth > 768) {
+    if (window.innerWidth > 768 && !hasVideoError) {
       hoverTimer.current = setTimeout(() => {
         setShowVideo(true);
-        setActiveVideo(videoId || null);
       }, 2000);
     }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+    }
     if (window.innerWidth > 768) {
       setShowVideo(false);
-      setActiveVideo(null);
     }
   };
 
@@ -111,8 +118,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchMove}
-      onTouchMove={handleTouchMove}
+      onTouchCancel={handleTouchCancel}
+      onTouchMove={handleTouchCancel}
       ref={cardRef}
     >
       {isEligible && (
@@ -126,14 +133,25 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
       <Link to={`/game/${game.id}`}>
         <div className="relative w-full pt-[56.25%]">
-          {showVideo && videoId ? (
+          {isLoadingVideo && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          )}
+
+          {showVideo && videoId && !hasVideoError ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&controls=0&loop=1&playlist=${videoId}`}
+                ref={videoRef}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&modestbranding=1`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onError={() => {
+                  setHasVideoError(true);
+                  setShowVideo(false);
+                }}
               />
             </div>
           ) : (
@@ -142,8 +160,10 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               alt={game.Game_Title}
               className="absolute inset-0 w-full h-full object-contain bg-gray-100 dark:bg-gray-700"
               loading="lazy"
+              onError={() => setHasVideoError(true)}
             />
           )}
+          
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0">
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
