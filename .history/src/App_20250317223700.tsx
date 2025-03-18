@@ -43,6 +43,7 @@ const IntroModal = ({ isOpen, onClose }) => {
             <div>
               <p className="font-semibold">1. Browse Games</p>
               <ul className="list-disc pl-5">
+                <li>Use the <strong>search bar</strong> to find specific games.</li>
                 <li>Click <strong>platform icons</strong> to filter by platform.</li>
                 <li>Use the search "<Search size={16} className="inline" />" button at the top to apply filters like platform, genre, price, and more.</li>
               </ul>
@@ -68,7 +69,8 @@ const IntroModal = ({ isOpen, onClose }) => {
               <p className="font-semibold">3. How to get your games :)</p>
               <ul className="list-disc pl-5">
                 <li>Go to your cart at the top right <ShoppingCart size={16} className="inline" /> and review your items.</li>
-                <li>Choose <strong>WhatsApp</strong> at checkout and you can pay in person in srd</li>
+                <li>Enjoy <strong>volume discounts</strong> for buying multiple games.</li>
+                <li>Checkout is easy, the website will send us a <strong>WhatsApp</strong> message and you can pay in person in srd</li>
               </ul>
             </div>
           </div>
