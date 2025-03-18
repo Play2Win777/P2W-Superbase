@@ -155,7 +155,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1${isCenterCard ? '' : '&mute=0'}`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1${isCenterCard && window.innerWidth <= 768 ? '' : '&mute=1'}`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="autoplay; encrypted-media"
