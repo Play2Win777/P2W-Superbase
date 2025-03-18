@@ -14,9 +14,11 @@ interface GameCardProps {
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
+  const autoplayTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
   const { darkMode } = useTheme();
   const [isClicked, setIsClicked] = useState(false);
+  const [isCenterCard, setIsCenterCard] = useState(false);
   const navigate = useNavigate();
   const cardRef = useRef<HTMLDivElement>(null);
   const { setFilters, setShowFilters } = useStore((state) => ({
@@ -29,59 +31,74 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   // Check if game is eligible for flash sale
   const isEligible = isFlashSaleEligible(game);
 
+  // Check if this card is the center one on the screen for mobile
+  useEffect(() => {
+    const checkIfCenter = () => {
+      if (!cardRef.current || window.innerWidth > 768) {
+        setIsCenterCard(false);
+        return;
+      }
+
+      const rect = cardRef.current.getBoundingClientRect();
+      const windowCenter = window.innerWidth / 2;
+      const cardCenter = rect.left + rect.width / 2;
+      const isCenter = Math.abs(windowCenter - cardCenter) < rect.width / 2;
+      
+      setIsCenterCard(isCenter);
+    };
+
+    // Check on mount and when scrolling
+    checkIfCenter();
+    const scrollHandler = () => {
+      checkIfCenter();
+    };
+
+    window.addEventListener('scroll', scrollHandler);
+    window.addEventListener('resize', checkIfCenter);
+
+    return () => {
+      window.removeEventListener('scroll', scrollHandler);
+      window.removeEventListener('resize', checkIfCenter);
+    };
+  }, []);
+
+  // Effect to handle autoplay for center card on mobile
+  useEffect(() => {
+    if (isCenterCard && window.innerWidth <= 768) {
+      autoplayTimer.current = setTimeout(() => {
+        setShowVideo(true);
+      }, 1000);
+    } else if (!isCenterCard && !hoverTimer.current) {
+      setShowVideo(false);
+    }
+
+    return () => {
+      if (autoplayTimer.current) {
+        clearTimeout(autoplayTimer.current);
+      }
+    };
+  }, [isCenterCard]);
+
   const handleMouseEnter = () => {
-    hoverTimer.current = setTimeout(() => {
-      setShowVideo(true);
-    }, 2000);
+    // Only use hover timer on desktop
+    if (window.innerWidth > 768) {
+      hoverTimer.current = setTimeout(() => {
+        setShowVideo(true);
+      }, 2000);
+    }
   };
 
   const handleMouseLeave = () => {
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current);
     }
-    setShowVideo(false);
+    // Only hide video on mouse leave for desktop
+    if (window.innerWidth > 768) {
+      setShowVideo(false);
+    }
   };
 
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
-
-  // Mobile scroll handling (only for mobile devices)
-  useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (!isMobile) return;
-  
-    const handleScroll = () => {
-      if (!cardRef.current) return;
-  
-      const rect = cardRef.current.getBoundingClientRect();
-      const isVisible =
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth);
-  
-      if (isVisible) {
-        document.querySelectorAll("iframe").forEach((iframe) => {
-          iframe.src = iframe.src; // Pause all videos by resetting src
-        });
-  
-        setShowVideo(true);
-      } else {
-        setShowVideo(false);
-      }
-    };
-  
-    let scrollTimeout: NodeJS.Timeout;
-    const scrollHandler = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(handleScroll, 500);
-    };
-  
-    window.addEventListener("scroll", scrollHandler);
-    return () => {
-      window.removeEventListener("scroll", scrollHandler);
-      clearTimeout(scrollTimeout);
-    };
-  }, []);
 
   const getPlatformIcon = (platform: string): string => {
     const platformMap: Record<string, string> = {
@@ -138,7 +155,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1${isCenterCard ? '' : '&mute=0'}`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="autoplay; encrypted-media"
