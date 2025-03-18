@@ -24,73 +24,54 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setFilters: state.setFilters,
     setShowFilters: state.setShowFilters,
   }));
-  const [touchStartTime, setTouchStartTime] = useState(0);
-  const isInteracting = useRef(false);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-  // Enhanced touch handlers
+  // Mobile touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth > 768) return;
-    
     const target = e.target as HTMLElement;
     if (target.closest('button, a')) return;
 
-    console.log('Touch started');
-    isInteracting.current = true;
-    setTouchStartTime(Date.now());
-    
     touchTimer.current = setTimeout(() => {
-      if (isInteracting.current) {
-        console.log('Touch duration reached - showing video');
-        setShowVideo(true);
-      }
+      setShowVideo(true);
+      setActiveVideo(videoId || null);
     }, 1000);
   };
 
   const handleTouchEnd = () => {
     if (window.innerWidth > 768) return;
-    
-    console.log('Touch ended');
-    isInteracting.current = false;
-    const touchDuration = Date.now() - touchStartTime;
-    
-    if (touchTimer.current) {
-      clearTimeout(touchTimer.current);
-    }
-
-    if (touchDuration < 1000) {
-      console.log('Touch was too short - cancelling video');
-    }
-    
-    setTimeout(() => {
-      console.log('Hiding video');
-      setShowVideo(false);
-    }, 50);
+    if (touchTimer.current) clearTimeout(touchTimer.current);
   };
 
-  // Enhanced mouse handlers
+  // Reset video when touching other elements
+  const handleTouchMove = () => {
+    if (window.innerWidth > 768) return;
+    setShowVideo(false);
+    setActiveVideo(null);
+  };
+
+  // Desktop hover handlers
   const handleMouseEnter = () => {
     if (window.innerWidth > 768) {
-      console.log('Desktop hover start');
       hoverTimer.current = setTimeout(() => {
         setShowVideo(true);
+        setActiveVideo(videoId || null);
       }, 2000);
     }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimer.current) {
-      console.log('Desktop hover end');
-      clearTimeout(hoverTimer.current);
-    }
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
     if (window.innerWidth > 768) {
       setShowVideo(false);
+      setActiveVideo(null);
     }
   };
 
-  // Platform icon mapping remains the same
+  // Platform icon mapping
   const getPlatformIcon = (platform: string): string => {
     const platformMap: Record<string, string> = {
       'Nintendo 3DS': '3ds',
@@ -111,9 +92,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const handleClick = () => {
     addToCart(game);
     setIsClicked(true);
-    setTimeout(() => {
-      setIsClicked(false);
-    }, 1000);
+    setTimeout(() => setIsClicked(false), 1000);
   };
 
   const handlePlatformClick = (e: React.MouseEvent, platform: string) => {
@@ -132,8 +111,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
-      onTouchMove={handleTouchEnd}
+      onTouchCancel={handleTouchMove}
+      onTouchMove={handleTouchMove}
       ref={cardRef}
     >
       {isEligible && (
@@ -150,12 +129,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&controls=0&loop=1&playlist=${videoId}`}
                 className="absolute inset-0 w-full h-full"
-                style={{ 
-                  aspectRatio: '16/9',
-                  pointerEvents: 'none' // Allows touch events to pass through
-                }}
+                style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
