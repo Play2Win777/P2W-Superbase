@@ -34,7 +34,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     // Intersection Observer Logic
     useEffect(() => {
       if (window.innerWidth > 768) return; // Only for mobile
-  
+    
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -44,7 +44,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               const viewportHeight = window.innerHeight;
               const cardCenter = cardRect.top + cardRect.height / 2;
               const viewportCenter = viewportHeight / 2;
-  
+    
               // If the card is within 30% of the viewport center, show the video
               if (Math.abs(cardCenter - viewportCenter) < viewportHeight * 0.3) {
                 setShowVideo(true);
@@ -58,13 +58,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         },
         {
           threshold: 0.5, // Trigger when 50% of the card is visible
+          rootMargin: '-40% 0px -40% 0px', // Shrink the intersection area
         }
       );
-  
+    
       if (cardRef.current) {
         observer.observe(cardRef.current);
       }
-  
+    
       return () => {
         if (cardRef.current) {
           observer.unobserve(cardRef.current);
