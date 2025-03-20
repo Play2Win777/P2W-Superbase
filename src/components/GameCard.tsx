@@ -57,8 +57,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           });
         },
         {
-          threshold: 0.5, // Trigger when 50% of the card is visible
-          rootMargin: '-40% 0px -40% 0px', // Shrink the intersection area
+          threshold: 0.75, // Trigger when 50% of the card is visible
+          rootMargin: '-25% 0px -25% 0px', // Shrink the intersection area
         }
       );
     
@@ -185,7 +185,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <div className="absolute inset-0 w-full h-full">
               <iframe
                 ref={videoRef}
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&modestbranding=1&loop=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&modestbranding=1&loop=1`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
