@@ -25,7 +25,7 @@ const IntroModal = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
             <Zap size={24} className="text-orange-500" />
-            Welcome to P2W Games! Intro Sale (up to 55% off -check the<ShoppingCart size={85} className="text-purple-500" />)
+            Welcome to P2W Games!
           </h2>
           <button
             onClick={onClose}
@@ -261,7 +261,7 @@ function App() {
                     onClick={() => window.location.href = '/'} 
                     className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap cursor-pointer flex items-center"
                   >
-                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-12 mr-3" />
+                    <img src="/assets/icons/p2wlogo.png" alt="Play 2 Win" className="h-14 mr-3" />
                   </h1>
                 </div>
 

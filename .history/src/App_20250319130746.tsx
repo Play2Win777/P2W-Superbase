@@ -25,7 +25,7 @@ const IntroModal = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
             <Zap size={24} className="text-orange-500" />
-            Welcome to P2W Games! Intro Sale (up to 55% off -check the<ShoppingCart size={85} className="text-purple-500" />)
+            Welcome to P2W Games! Intro Sale (up to 55% off -check <ShoppingCart size={20} className="flex-shrink-0 text-purple-500" />)
           </h2>
           <button
             onClick={onClose}

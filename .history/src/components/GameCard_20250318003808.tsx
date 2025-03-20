@@ -9,14 +9,15 @@ import { Toast } from './Toast';
 
 interface GameCardProps {
   game: Game;
+  index: number; // Add index prop to identify each card
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ game }) => {
+export const GameCard: React.FC<GameCardProps> = ({ game, index }) => {
   const [showVideo, setShowVideo] = useState(false);
-  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
-  const [hasVideoError, setHasVideoError] = useState(false);
+  const [isCenter, setIsCenter] = useState(false);
+  const [autoplayWithSound, setAutoplayWithSound] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
-  const touchTimer = useRef<NodeJS.Timeout>();
+  const centerCheckTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
   const { darkMode } = useTheme();
   const [isClicked, setIsClicked] = useState(false);
@@ -26,100 +27,118 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setFilters: state.setFilters,
     setShowFilters: state.setShowFilters,
   }));
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const toastMessage = useStore((state) => state.toastMessage);
+  const toastDiscountInfo = useStore((state) => state.toastDiscountInfo);
 
+  // Check if game is eligible for flash sale
   const isEligible = isFlashSaleEligible(game);
+
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-    // Intersection Observer Logic
-    useEffect(() => {
-      if (window.innerWidth > 768) return; // Only for mobile
-  
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Calculate how centered the card is
-              const cardRect = entry.boundingClientRect;
-              const viewportHeight = window.innerHeight;
-              const cardCenter = cardRect.top + cardRect.height / 2;
-              const viewportCenter = viewportHeight / 2;
-  
-              // If the card is within 30% of the viewport center, show the video
-              if (Math.abs(cardCenter - viewportCenter) < viewportHeight * 0.3) {
-                setShowVideo(true);
-              } else {
-                setShowVideo(false);
-              }
-            } else {
-              setShowVideo(false);
-            }
-          });
-        },
-        {
-          threshold: 0.5, // Trigger when 50% of the card is visible
+  // Function to determine if this card is the most centered in the viewport
+  const checkIfCentered = () => {
+    if (!cardRef.current) return false;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const windowCenter = window.innerWidth / 2;
+    const cardCenter = rect.left + rect.width / 2;
+    const distance = Math.abs(windowCenter - cardCenter);
+    
+    // Check if at least 80% of the card is visible
+    const isVisible = 
+      rect.top < window.innerHeight && 
+      rect.bottom > 0 && 
+      rect.left < window.innerWidth && 
+      rect.right > 0;
+    
+    // Get all game cards
+    const allCards = document.querySelectorAll('[data-game-card="true"]');
+    let isClosestToCenter = true;
+    
+    // Check if this card is the closest to center
+    allCards.forEach((card) => {
+      if (card !== cardRef.current) {
+        const otherRect = card.getBoundingClientRect();
+        const otherCenter = otherRect.left + otherRect.width / 2;
+        const otherDistance = Math.abs(windowCenter - otherCenter);
+        
+        if (otherDistance < distance) {
+          isClosestToCenter = false;
         }
-      );
-  
-      if (cardRef.current) {
-        observer.observe(cardRef.current);
       }
-  
-      return () => {
-        if (cardRef.current) {
-          observer.unobserve(cardRef.current);
+    });
+    
+    return isVisible && isClosestToCenter;
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const centered = checkIfCentered();
+      if (centered !== isCenter) {
+        setIsCenter(centered);
+        
+        // If this card became the center card, start the autoplay timer
+        if (centered && videoId) {
+          clearTimeout(centerCheckTimer.current);
+          centerCheckTimer.current = setTimeout(() => {
+            setShowVideo(true);
+            setAutoplayWithSound(true);
+          }, 1000);
+        } else {
+          // If no longer centered, stop video and clear timer
+          clearTimeout(centerCheckTimer.current);
+          if (autoplayWithSound) {
+            setShowVideo(false);
+            setAutoplayWithSound(false);
+          }
         }
-      };
-    }, []);
-  
-  // Mobile touch handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.innerWidth > 768 || hasVideoError) return;
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
     
-    const target = e.target as HTMLElement;
-    if (target.closest('button, a')) return;
+    // Check periodically in case of dynamic content loading
+    const intervalId = setInterval(handleScroll, 500);
 
-    setIsLoadingVideo(true);
-    touchTimer.current = setTimeout(() => {
-      setShowVideo(true);
-      setIsLoadingVideo(false);
-    }, 1000);
-  };
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      clearInterval(intervalId);
+      clearTimeout(centerCheckTimer.current);
+      clearTimeout(hoverTimer.current);
+    };
+  }, [videoId, isCenter, autoplayWithSound]);
 
-  const handleTouchEnd = () => {
-    if (window.innerWidth > 768) return;
-    
-    if (touchTimer.current) {
-      clearTimeout(touchTimer.current);
-    }
-    setIsLoadingVideo(false);
-  };
-
-  const handleTouchCancel = () => {
-    setShowVideo(false);
-    setIsLoadingVideo(false);
-    if (touchTimer.current) clearTimeout(touchTimer.current);
-  };
-
-  // Desktop hover handlers
   const handleMouseEnter = () => {
-    if (window.innerWidth > 768 && !hasVideoError) {
+    // Only use hover timer on desktop
+    if (window.innerWidth > 768) {
       hoverTimer.current = setTimeout(() => {
         setShowVideo(true);
+        // Desktop hover should be muted
+        setAutoplayWithSound(false);
       }, 2000);
     }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimer.current) {
-      clearTimeout(hoverTimer.current);
-    }
+    // Only respond to mouse events on desktop
     if (window.innerWidth > 768) {
-      setShowVideo(false);
+      if (hoverTimer.current) {
+        clearTimeout(hoverTimer.current);
+      }
+      // Only turn off video if it wasn't triggered by being centered
+      if (!isCenter) {
+        setShowVideo(false);
+        setAutoplayWithSound(false);
+      }
     }
   };
 
-  // Platform icon mapping
   const getPlatformIcon = (platform: string): string => {
     const platformMap: Record<string, string> = {
       'Nintendo 3DS': '3ds',
@@ -140,7 +159,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const handleClick = () => {
     addToCart(game);
     setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 1000);
+    setTimeout(() => {
+      setIsClicked(false);
+    }, 1000);
   };
 
   const handlePlatformClick = (e: React.MouseEvent, platform: string) => {
@@ -157,11 +178,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden transition-transform hover:scale-105 group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      onTouchMove={handleTouchCancel}
       ref={cardRef}
+      data-game-card="true"
+      data-game-index={index}
     >
       {isEligible && (
         <Link to={`/flash-sale?platform=${game.Platform}`} className="absolute top-2 left-2 z-10">
@@ -174,25 +193,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
       <Link to={`/game/${game.id}`}>
         <div className="relative w-full pt-[56.25%]">
-          {isLoadingVideo && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            </div>
-          )}
-
-          {showVideo && videoId && !hasVideoError ? (
+          {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                ref={videoRef}
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&modestbranding=1&loop=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1${autoplayWithSound ? '' : '&mute=1'}`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allow="autoplay; encrypted-media"
                 allowFullScreen
-                onError={() => {
-                  setHasVideoError(true);
-                  setShowVideo(false);
-                }}
               />
             </div>
           ) : (
@@ -201,10 +209,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               alt={game.Game_Title}
               className="absolute inset-0 w-full h-full object-contain bg-gray-100 dark:bg-gray-700"
               loading="lazy"
-              onError={() => setHasVideoError(true)}
             />
           )}
-          
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0">
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
@@ -220,13 +226,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
                       style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                     />
                   </div>
-                  <span className="px-0.5 py-0.25 bg-blue-500/80 rounded text-sm">
+                  <span className="px-2 py-1 bg-blue-500/80 rounded text-sm">
                     {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
                   </span>
                 </div>
-                <span className="text-l font-bold">${game.Price_to_Sell_For}</span>
+                <span className="text-2xl font-bold">${game.Price_to_Sell_For}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <span className="text-amber-400 font-bold">★</span>
                 <span className="font-semibold">Metacritic: {game.Metacritic_Score}/100</span>
               </div>
@@ -244,6 +250,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       >
         {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />}
       </button>
+      
+      {/* Indicator for debugging - remove in production */}
+      {/* {isCenter && (
+        <div className="absolute top-2 left-24 bg-red-500 text-white px-2 py-1 rounded text-xs">
+          Center
+        </div>
+      )} */}
     </div>
   );
 };

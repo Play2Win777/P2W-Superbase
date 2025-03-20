@@ -13,8 +13,6 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
-  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
-  const [hasVideoError, setHasVideoError] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const touchTimer = useRef<NodeJS.Timeout>();
   const addToCart = useStore((state) => state.addToCart);
@@ -26,96 +24,50 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     setFilters: state.setFilters,
     setShowFilters: state.setShowFilters,
   }));
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-    // Intersection Observer Logic
-    useEffect(() => {
-      if (window.innerWidth > 768) return; // Only for mobile
-  
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Calculate how centered the card is
-              const cardRect = entry.boundingClientRect;
-              const viewportHeight = window.innerHeight;
-              const cardCenter = cardRect.top + cardRect.height / 2;
-              const viewportCenter = viewportHeight / 2;
-  
-              // If the card is within 30% of the viewport center, show the video
-              if (Math.abs(cardCenter - viewportCenter) < viewportHeight * 0.3) {
-                setShowVideo(true);
-              } else {
-                setShowVideo(false);
-              }
-            } else {
-              setShowVideo(false);
-            }
-          });
-        },
-        {
-          threshold: 0.5, // Trigger when 50% of the card is visible
-        }
-      );
-  
-      if (cardRef.current) {
-        observer.observe(cardRef.current);
-      }
-  
-      return () => {
-        if (cardRef.current) {
-          observer.unobserve(cardRef.current);
-        }
-      };
-    }, []);
-  
   // Mobile touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.innerWidth > 768 || hasVideoError) return;
-    
+    if (window.innerWidth > 768) return;
     const target = e.target as HTMLElement;
     if (target.closest('button, a')) return;
 
-    setIsLoadingVideo(true);
     touchTimer.current = setTimeout(() => {
       setShowVideo(true);
-      setIsLoadingVideo(false);
+      setActiveVideo(videoId || null);
     }, 1000);
   };
 
   const handleTouchEnd = () => {
     if (window.innerWidth > 768) return;
-    
-    if (touchTimer.current) {
-      clearTimeout(touchTimer.current);
-    }
-    setIsLoadingVideo(false);
+    if (touchTimer.current) clearTimeout(touchTimer.current);
   };
 
-  const handleTouchCancel = () => {
+  // Reset video when touching other elements
+  const handleTouchMove = () => {
+    if (window.innerWidth > 768) return;
     setShowVideo(false);
-    setIsLoadingVideo(false);
-    if (touchTimer.current) clearTimeout(touchTimer.current);
+    setActiveVideo(null);
   };
 
   // Desktop hover handlers
   const handleMouseEnter = () => {
-    if (window.innerWidth > 768 && !hasVideoError) {
+    if (window.innerWidth > 768) {
       hoverTimer.current = setTimeout(() => {
         setShowVideo(true);
+        setActiveVideo(videoId || null);
       }, 2000);
     }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimer.current) {
-      clearTimeout(hoverTimer.current);
-    }
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
     if (window.innerWidth > 768) {
       setShowVideo(false);
+      setActiveVideo(null);
     }
   };
 
@@ -159,8 +111,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      onTouchMove={handleTouchCancel}
+      onTouchCancel={handleTouchMove}
+      onTouchMove={handleTouchMove}
       ref={cardRef}
     >
       {isEligible && (
@@ -174,25 +126,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
       <Link to={`/game/${game.id}`}>
         <div className="relative w-full pt-[56.25%]">
-          {isLoadingVideo && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            </div>
-          )}
-
-          {showVideo && videoId && !hasVideoError ? (
+          {showVideo && videoId ? (
             <div className="absolute inset-0 w-full h-full">
               <iframe
-                ref={videoRef}
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&modestbranding=1&loop=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&controls=0&loop=1&playlist=${videoId}`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                onError={() => {
-                  setHasVideoError(true);
-                  setShowVideo(false);
-                }}
               />
             </div>
           ) : (
@@ -201,10 +142,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               alt={game.Game_Title}
               className="absolute inset-0 w-full h-full object-contain bg-gray-100 dark:bg-gray-700"
               loading="lazy"
-              onError={() => setHasVideoError(true)}
             />
           )}
-          
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0">
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
@@ -220,13 +159,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
                       style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                     />
                   </div>
-                  <span className="px-0.5 py-0.25 bg-blue-500/80 rounded text-sm">
+                  <span className="px-2 py-1 bg-blue-500/80 rounded text-sm">
                     {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
                   </span>
                 </div>
-                <span className="text-l font-bold">${game.Price_to_Sell_For}</span>
+                <span className="text-2xl font-bold">${game.Price_to_Sell_For}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <span className="text-amber-400 font-bold">★</span>
                 <span className="font-semibold">Metacritic: {game.Metacritic_Score}/100</span>
               </div>

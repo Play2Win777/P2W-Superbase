@@ -31,47 +31,6 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-    // Intersection Observer Logic
-    useEffect(() => {
-      if (window.innerWidth > 768) return; // Only for mobile
-  
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Calculate how centered the card is
-              const cardRect = entry.boundingClientRect;
-              const viewportHeight = window.innerHeight;
-              const cardCenter = cardRect.top + cardRect.height / 2;
-              const viewportCenter = viewportHeight / 2;
-  
-              // If the card is within 30% of the viewport center, show the video
-              if (Math.abs(cardCenter - viewportCenter) < viewportHeight * 0.3) {
-                setShowVideo(true);
-              } else {
-                setShowVideo(false);
-              }
-            } else {
-              setShowVideo(false);
-            }
-          });
-        },
-        {
-          threshold: 0.5, // Trigger when 50% of the card is visible
-        }
-      );
-  
-      if (cardRef.current) {
-        observer.observe(cardRef.current);
-      }
-  
-      return () => {
-        if (cardRef.current) {
-          observer.unobserve(cardRef.current);
-        }
-      };
-    }, []);
-  
   // Mobile touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth > 768 || hasVideoError) return;
@@ -184,7 +143,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <div className="absolute inset-0 w-full h-full">
               <iframe
                 ref={videoRef}
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&modestbranding=1&loop=1`}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&modestbranding=1`}
                 className="absolute inset-0 w-full h-full"
                 style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
@@ -207,7 +166,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0">
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-12">
                 <div className="flex gap-2 items-center">
                   <div 
                     className="gamecard-icon-container cursor-pointer hover:opacity-80 transition-opacity"
