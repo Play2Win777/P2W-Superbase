@@ -57,8 +57,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           });
         },
         {
-          threshold: 0.75, // Trigger when 50% of the card is visible
-          rootMargin: '-25% 0px -25% 0px', // Shrink the intersection area
+          threshold: 0.88, // Trigger when 50% of the card is visible
+          rootMargin: '-33% 0px -40% 0px', // Shrink the intersection area
         }
       );
     
