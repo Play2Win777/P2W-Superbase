@@ -190,11 +190,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
                 style={{ aspectRatio: '16/9' }}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onLoad={() => console.log('YouTube video loaded successfully')}
                 onError={() => {
+                  console.error('YouTube video failed to load');
                   setHasVideoError(true);
                   setShowVideo(false);
-                }}
-              />
+            }}
+          />
             </div>
           ) : (
             <img
