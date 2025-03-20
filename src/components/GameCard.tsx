@@ -31,43 +31,43 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
 
-    // Intersection Observer Logic
-    useEffect(() => {
-      if (window.innerWidth > 768) return; // Only for mobile
-    
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              console.log('Card is intersecting, showing video');
-          setShowVideo(true);
-        } else {
-          console.log('Card is not intersecting, hiding video');
-          setShowVideo(false);
-            }
-          });
-        },
-        {
-          threshold: 0.94, // Trigger when 50% of the card is visible
-          rootMargin: '-23% 0px -23% 0px', // Shrink the intersection area
-        }
-      );
-    
-      if (cardRef.current) {
-        observer.observe(cardRef.current);
+  // Intersection Observer Logic
+  useEffect(() => {
+    if (window.innerWidth > 768) return; // Only for mobile
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            console.log('Card is intersecting, showing video');
+            setShowVideo(true);
+          } else {
+            console.log('Card is not intersecting, hiding video');
+            setShowVideo(false);
+          }
+        });
+      },
+      {
+        threshold: 0.94, // Trigger when 94% of the card is visible
+        rootMargin: '-23% 0px -23% 0px', // Shrink the intersection area
       }
-    
-      return () => {
-        if (cardRef.current) {
-          observer.unobserve(cardRef.current);
-        }
-      };
-    }, []);
-  
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
   // Mobile touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth > 768 || hasVideoError) return;
-    
+
     const target = e.target as HTMLElement;
     if (target.closest('button, a')) return;
 
@@ -80,7 +80,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
   const handleTouchEnd = () => {
     if (window.innerWidth > 768) return;
-    
+
     if (touchTimer.current) {
       clearTimeout(touchTimer.current);
     }
@@ -156,13 +156,26 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       ref={cardRef}
     >
       {isEligible && (
-        <Link to={`/flash-sale?platform=${game.Platform}`} className="absolute top-2 left-2 z-10">
+        <Link to={`/flash-sale?platform=${game.Platform}`} className="absolute top-2 left-2 z-20">
           <span className="inline-flex items-center bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
             <Zap size={12} className="mr-1" />
             Flash Sale
           </span>
         </Link>
       )}
+
+      {/* Platform button (positioned 2 points from the left and centered vertically) */}
+      <div
+        className="gamecard-icon-container cursor-pointer hover:opacity-80 transition-opacity z-20 absolute top-1/2 left-2 transform -translate-y-1/2"
+        onClick={(e) => handlePlatformClick(e, game.Platform)}
+      >
+        <img
+          src={getPlatformIcon(game.Platform)}
+          alt={game.Platform}
+          className="h-6 w-auto rounded"
+          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+        />
+      </div>
 
       <Link to={`/game/${game.id}`}>
         <div className="relative w-full pt-[56.25%]">
@@ -186,8 +199,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
                   console.error('YouTube video failed to load');
                   setHasVideoError(true);
                   setShowVideo(false);
-            }}
-          />
+                }}
+              />
             </div>
           ) : (
             <img
@@ -198,22 +211,12 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               onError={() => setHasVideoError(true)}
             />
           )}
-          
+
+          {/* Fade-out overlay */}
           <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0 ${showVideo ? 'fade-out' : ''}`}>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex gap-2 items-center">
-                  <div 
-                    className="gamecard-icon-container cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={(e) => handlePlatformClick(e, game.Platform)}
-                  >
-                    <img
-                      src={getPlatformIcon(game.Platform)}
-                      alt={game.Platform}
-                      className="h-6 w-auto rounded"
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                    />
-                  </div>
                   <span className="px-0.5 py-0.25 bg-blue-500/80 rounded text-sm">
                     {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
                   </span>
@@ -231,7 +234,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
       <button
         onClick={handleClick}
-        className={`absolute top-2 right-2 p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors ${
+        className={`absolute top-2 right-2 p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors z-20 ${
           isClicked ? 'bg-green-600 cursor-not-allowed' : ''
         }`}
         disabled={isClicked}
