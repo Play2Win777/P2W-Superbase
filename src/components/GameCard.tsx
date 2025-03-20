@@ -199,7 +199,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             />
           )}
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0">
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0 ${showVideo ? 'fade-out' : ''}`}>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex gap-2 items-center">
