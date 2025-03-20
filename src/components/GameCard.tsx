@@ -39,20 +39,11 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
-              // Calculate how centered the card is
-              const cardRect = entry.boundingClientRect;
-              const viewportHeight = window.innerHeight;
-              const cardCenter = cardRect.top + cardRect.height / 2;
-              const viewportCenter = viewportHeight / 2;
-    
-              // If the card is within 30% of the viewport center, show the video
-              if (Math.abs(cardCenter - viewportCenter) < viewportHeight * 0.3) {
-                setShowVideo(true);
-              } else {
-                setShowVideo(false);
-              }
-            } else {
-              setShowVideo(false);
+              console.log('Card is intersecting, showing video');
+          setShowVideo(true);
+        } else {
+          console.log('Card is not intersecting, hiding video');
+          setShowVideo(false);
             }
           });
         },
