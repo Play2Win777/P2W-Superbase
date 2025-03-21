@@ -6,7 +6,6 @@ import { useStore } from '../store';
 import { isFlashSaleEligible } from '../utils/gameHelpers';
 import { useTheme } from '../context/ThemeContext';
 import { Toast } from './Toast';
-import { useExchangeRate } from '../context/ExchangeRateContext'; // Import the useExchangeRate hook
 
 interface GameCardProps {
   game: Game;
@@ -16,6 +15,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const touchTimer = useRef<NodeJS.Timeout>();
   const videoDelayTimer = useRef<NodeJS.Timeout>();
@@ -30,10 +30,25 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   }));
   const videoRef = useRef<HTMLIFrameElement>(null);
 
-  const { exchangeRate } = useExchangeRate(); // Use the exchange rate from the context
-
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
+
+  // Fetch exchange rate (USD to SRD)
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        const usdToSrd = data.rates.SRD || 36.35; // Fallback to 36.35 if API fails
+        setExchangeRate(usdToSrd + 0.4); // Add 40 cents markup
+      } catch (error) {
+        console.error('Failed to fetch exchange rate:', error);
+        setExchangeRate(36.35 + 0.4); // Fallback to 36.35 + 0.4 if API fails
+      }
+    };
+
+    fetchExchangeRate();
+  }, []);
 
   // Round price to the nearest whole number
   const roundedPrice = Math.round(game.Price_to_Sell_For);
@@ -233,13 +248,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0 ${showVideo ? 'fade-out' : ''}`}>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
-                <div className="flex gap-2 items-center -ml-3"> {/* Moved 2 points from the left edge */}
+                <div className="flex gap-2 items-center ml-2"> {/* Moved 2 points from the left edge */}
                   <span className="px-0.5 py-0.25 bg-blue-500/80 rounded text-sm">
                     {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-0 -ml-3"> {/* Moved 2 points from the left edge */}
+              <div className="flex items-center gap-1 ml-2"> {/* Moved 2 points from the left edge */}
                 <span className="text-amber-400 font-bold">★</span>
                 <span className="font-semibold">Metacritic: {game.Metacritic_Score}/100</span>
               </div>
@@ -251,18 +266,18 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       {/* Add to Cart button with rounded price and SRD price */}
       <button
         onClick={handleClick}
-        className={`absolute top-2 right-2 p-0.5 bg-emerald-500 text-white rounded-md shadow-lg hover:bg-emerald-600 transition-colors z-20 ${
+        className={`absolute top-2 right-2 p-1.5 bg-emerald-500 text-white rounded-md shadow-lg hover:bg-emerald-600 transition-colors z-20 ${
           isClicked ? 'bg-green-600 cursor-not-allowed' : ''
         }`}
         disabled={isClicked}
       >
-        <div className="flex flex-col items-center gap-0">
-          <div className="flex items-center gap-0">
+        <div className="flex flex-col items-center gap-.5">
+          <div className="flex items-center gap-1">
             <span className="font-semibold">${roundedPrice}</span>
             {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />}
           </div>
           {srdPrice && (
-            <span className="text-xs font-bold text-white">srd {srdPrice}</span>
+            <span className="text-xs text-white lowercase">srd {srdPrice}</span>
           )}
         </div>
       </button>

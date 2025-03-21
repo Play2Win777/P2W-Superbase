@@ -6,7 +6,6 @@ import { useStore } from '../store';
 import { isFlashSaleEligible } from '../utils/gameHelpers';
 import { useTheme } from '../context/ThemeContext';
 import { Toast } from './Toast';
-import { useExchangeRate } from '../context/ExchangeRateContext'; // Import the useExchangeRate hook
 
 interface GameCardProps {
   game: Game;
@@ -18,7 +17,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [hasVideoError, setHasVideoError] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const touchTimer = useRef<NodeJS.Timeout>();
-  const videoDelayTimer = useRef<NodeJS.Timeout>();
+  const videoDelayTimer = useRef<NodeJS.Timeout>(); // Declare videoDelayTimer
   const addToCart = useStore((state) => state.addToCart);
   const { darkMode } = useTheme();
   const [isClicked, setIsClicked] = useState(false);
@@ -30,18 +29,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   }));
   const videoRef = useRef<HTMLIFrameElement>(null);
 
-  const { exchangeRate } = useExchangeRate(); // Use the exchange rate from the context
-
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
-
-  // Round price to the nearest whole number
-  const roundedPrice = Math.round(game.Price_to_Sell_For);
-
-  // Calculate SRD price and round to the nearest 5 SRD
-  const srdPrice = exchangeRate
-    ? Math.round((game.Price_to_Sell_For * exchangeRate) / 5) * 5
-    : null;
 
   // Intersection Observer Logic
   useEffect(() => {
@@ -52,11 +41,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             console.log('Card is intersecting, showing video after 1 second');
+            // Set a 1-second delay before showing the video
             videoDelayTimer.current = setTimeout(() => {
               setShowVideo(true);
             }, 1000); // 1-second delay
           } else {
             console.log('Card is not intersecting, hiding video');
+            // Clear the delay timer if the card is no longer intersecting
             if (videoDelayTimer.current) {
               clearTimeout(videoDelayTimer.current);
             }
@@ -233,13 +224,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent dark:from-black/20 dark:via-black/0 ${showVideo ? 'fade-out' : ''}`}>
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <div className="flex justify-between items-center mb-2">
-                <div className="flex gap-2 items-center -ml-3"> {/* Moved 2 points from the left edge */}
+                <div className="flex gap-2 items-center">
                   <span className="px-0.5 py-0.25 bg-blue-500/80 rounded text-sm">
                     {`${game.Genre}${game.Sub_Genre ? ` - ${game.Sub_Genre}` : ''}`}
                   </span>
                 </div>
+                <span className="text-l font-bold">${game.Price_to_Sell_For}</span>
               </div>
-              <div className="flex items-center gap-0 -ml-3"> {/* Moved 2 points from the left edge */}
+              <div className="flex items-center gap-1">
                 <span className="text-amber-400 font-bold">★</span>
                 <span className="font-semibold">Metacritic: {game.Metacritic_Score}/100</span>
               </div>
@@ -248,23 +240,14 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         </div>
       </Link>
 
-      {/* Add to Cart button with rounded price and SRD price */}
       <button
         onClick={handleClick}
-        className={`absolute top-2 right-2 p-0.5 bg-emerald-500 text-white rounded-md shadow-lg hover:bg-emerald-600 transition-colors z-20 ${
+        className={`absolute top-2 right-2 p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors z-20 ${
           isClicked ? 'bg-green-600 cursor-not-allowed' : ''
         }`}
         disabled={isClicked}
       >
-        <div className="flex flex-col items-center gap-0">
-          <div className="flex items-center gap-0">
-            <span className="font-semibold">${roundedPrice}</span>
-            {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />}
-          </div>
-          {srdPrice && (
-            <span className="text-xs font-bold text-white">srd {srdPrice}</span>
-          )}
-        </div>
+        {isClicked ? <Check size={20} /> : <ShoppingCart size={20} className="group-hover:neon-wiggle" />}
       </button>
     </div>
   );

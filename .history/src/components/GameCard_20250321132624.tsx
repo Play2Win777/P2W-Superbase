@@ -6,7 +6,6 @@ import { useStore } from '../store';
 import { isFlashSaleEligible } from '../utils/gameHelpers';
 import { useTheme } from '../context/ThemeContext';
 import { Toast } from './Toast';
-import { useExchangeRate } from '../context/ExchangeRateContext'; // Import the useExchangeRate hook
 
 interface GameCardProps {
   game: Game;
@@ -16,6 +15,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [showVideo, setShowVideo] = useState(false);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const touchTimer = useRef<NodeJS.Timeout>();
   const videoDelayTimer = useRef<NodeJS.Timeout>();
@@ -30,10 +30,25 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   }));
   const videoRef = useRef<HTMLIFrameElement>(null);
 
-  const { exchangeRate } = useExchangeRate(); // Use the exchange rate from the context
-
   const isEligible = isFlashSaleEligible(game);
   const videoId = game.Youtube_link?.split('v=')[1]?.split('&')[0];
+
+  // Fetch exchange rate (USD to SRD)
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        const usdToSrd = data.rates.SRD || 36.35; // Fallback to 36.35 if API fails
+        setExchangeRate(usdToSrd + 0.4); // Add 40 cents markup
+      } catch (error) {
+        console.error('Failed to fetch exchange rate:', error);
+        setExchangeRate(36.35 + 0.4); // Fallback to 36.35 + 0.4 if API fails
+      }
+    };
+
+    fetchExchangeRate();
+  }, []);
 
   // Round price to the nearest whole number
   const roundedPrice = Math.round(game.Price_to_Sell_For);

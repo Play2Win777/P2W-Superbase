@@ -242,7 +242,7 @@ export const Cart: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <span className="font-semibold dark:text-white">Total:</span>
               <div className="flex flex-col items-end">
-                <span className="text-xs text-gray-500 dark:text-gray-400">${total.toFixed(2)}</span>
+                <span className="text-xl dark:text-white">${total.toFixed(2)}</span>
                 {srdTotal && (
                   <span className="text-xl font-bold dark:text-white">
                     srd {srdTotal}

@@ -626,7 +626,7 @@ export const Checkout: React.FC = () => {
                 {srdTotal && (
                   <div className="flex justify-between font-bold">
                     <span className="text-gray-900 dark:text-white">Total in SRD</span>
-                    <span className="text-gray-900 dark:text-white">srd {srdTotal}</span>
+                    <span className="text-gray-900 dark:text-white">${srdTotal} SRD</span>
                   </div>
                 )}
 
