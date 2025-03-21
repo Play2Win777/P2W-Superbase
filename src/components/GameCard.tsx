@@ -39,10 +39,17 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            console.log('Card is intersecting, showing video');
-            setShowVideo(true);
+            console.log('Card is intersecting, showing video after 1 second');
+            // Set a 1-second delay before showing the video
+            videoDelayTimer.current = setTimeout(() => {
+              setShowVideo(true);
+            }, 1000); // 1-second delay
           } else {
             console.log('Card is not intersecting, hiding video');
+            // Clear the delay timer if the card is no longer intersecting
+            if (videoDelayTimer.current) {
+              clearTimeout(videoDelayTimer.current);
+            }
             setShowVideo(false);
           }
         });
