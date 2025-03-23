@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Zap, X, ShoppingCart, Filter, ArrowRight, Check, HelpCircle, Tag } from 'lucide-react';
 import { fetchGames } from './api';
 import { useStore } from './store';
