@@ -331,9 +331,6 @@ function App() {
               onClose={() => setShowIntroModal(false)}
             />
 
-             {/* Floating WhatsApp Button */}
-             <FloatingWhatsAppButton />
-             
             {/* Toast */}
             {toastMessage && (
               <Toast 

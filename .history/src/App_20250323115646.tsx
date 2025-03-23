@@ -1,7 +1,7 @@
 // src/App.tsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Zap, X, ShoppingCart, Filter, ArrowRight, Check, HelpCircle, Tag } from 'lucide-react';
+import { Search, Zap, X, ShoppingCart, Filter, ArrowRight, Check, HelpCircle } from 'lucide-react';
 import { fetchGames } from './api';
 import { useStore } from './store';
 import { Filters } from './components/Filters';
@@ -18,9 +18,9 @@ import { ExchangeRateProvider } from './context/ExchangeRateContext';
 
 // IntroModal Component
 const IntroModal = ({ isOpen, onClose }) => {
-  const [isBrowseOpen, setIsBrowseOpen] = useState(false); // Start collapsed
-  const [isAddToCartOpen, setIsAddToCartOpen] = useState(false); // Start collapsed
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false); // Start collapsed
+  const [isBrowseOpen, setIsBrowseOpen] = useState(true);
+  const [isAddToCartOpen, setIsAddToCartOpen] = useState(true);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(true);
 
   if (!isOpen) return null;
 
@@ -53,7 +53,7 @@ const IntroModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsBrowseOpen(!isBrowseOpen)}
-              className="flex items-center gap-2 text-left dark:text-white"
+              className="flex items-center gap-2 text-left"
             >
               <Search size={20} className="flex-shrink-0 text-purple-500" />
               <p className="font-semibold">1. How to Browse Games</p>
@@ -73,7 +73,7 @@ const IntroModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsAddToCartOpen(!isAddToCartOpen)}
-              className="flex items-center gap-2 text-left dark:text-white"
+              className="flex items-center gap-2 text-left"
             >
               <ShoppingCart size={20} className="flex-shrink-0 text-green-500" />
               <p className="font-semibold">2. How to Add to Cart</p>
@@ -93,7 +93,7 @@ const IntroModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsCheckoutOpen(!isCheckoutOpen)}
-              className="flex items-center gap-2 text-left dark:text-white"
+              className="flex items-center gap-2 text-left"
             >
               <Check size={20} className="flex-shrink-0 text-blue-500" />
               <p className="font-semibold">3. How to Get Your Games</p>
@@ -111,29 +111,16 @@ const IntroModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Fixed Footer: Special Xbox Sale Announcement */}
-        <a href="/intro-sale"className="bg-yellow-100 dark:bg-cyan-900 p-4 rounded-lg mt-4">
+        <div className="bg-yellow-100 dark:bg-cyan-900 p-4 rounded-lg mt-4">
           <div className="flex items-start gap-3">
             <Zap size={20} className="flex-shrink-0 mt-1 text-orange-500" />
             <div>
-              <a
-                href="/intro-sale" // Link to IntroSalePage
-                className="font-semibold dark:text-white hover:underline"
-              >
-                Special Xbox One Sale!
-              </a>
-              <p className="text-sm dark:text-gray-300">
+              <p className="font-semibold">Special Xbox One Sale!</p>
+              <p className="text-sm">
                 For every Xbox One game you add to your cart, you get <strong>5% off</strong> on those games. <strong>Get up to 55% off.</strong>
               </p>
             </div>
           </div>
-        </a>
-
-        {/* Volume Discount Section */}
-        <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-500 rounded-lg">
-          <p className="text-sm text-purple-700 dark:text-purple-200 flex items-center gap-2">
-            <Tag size={16} className="text-purple-500 dark:text-purple-300" />
-            <strong>Volume Discount:</strong> Get up to 20% off any games you add to your cart!
-          </p>
         </div>
 
         {/* Call to Action */}
@@ -198,28 +185,6 @@ const SearchBar = () => {
       onChange={handleSearch}
       className="w-full px-3 py-2 border rounded-lg text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
     />
-  );
-};
-
-// Whatsapp COMPONENT
-const FloatingWhatsAppButton = () => {
-  const phoneNumber = "+5978574777";
-  const message = "Hello! I have a question about P2W Games.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-  return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 p-3 bg-gray-200 dark:bg-gray-700 rounded-full shadow-lg hover:bg-green-500 dark:hover:bg-green-500 transition-all duration-300 hover:scale-110"
-    >
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-        alt="WhatsApp"
-        className="w-8 h-8 opacity-75 hover:opacity-100 transition-opacity"
-      />
-    </a>
   );
 };
 
@@ -331,9 +296,6 @@ function App() {
               onClose={() => setShowIntroModal(false)}
             />
 
-             {/* Floating WhatsApp Button */}
-             <FloatingWhatsAppButton />
-             
             {/* Toast */}
             {toastMessage && (
               <Toast 

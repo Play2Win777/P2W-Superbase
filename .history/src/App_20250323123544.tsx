@@ -129,7 +129,7 @@ const IntroModal = ({ isOpen, onClose }) => {
         </a>
 
         {/* Volume Discount Section */}
-        <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-500 rounded-lg">
+        <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900 rounded-lg">
           <p className="text-sm text-purple-700 dark:text-purple-200 flex items-center gap-2">
             <Tag size={16} className="text-purple-500 dark:text-purple-300" />
             <strong>Volume Discount:</strong> Get up to 20% off any games you add to your cart!
@@ -198,28 +198,6 @@ const SearchBar = () => {
       onChange={handleSearch}
       className="w-full px-3 py-2 border rounded-lg text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
     />
-  );
-};
-
-// Whatsapp COMPONENT
-const FloatingWhatsAppButton = () => {
-  const phoneNumber = "+5978574777";
-  const message = "Hello! I have a question about P2W Games.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-  return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 p-3 bg-gray-200 dark:bg-gray-700 rounded-full shadow-lg hover:bg-green-500 dark:hover:bg-green-500 transition-all duration-300 hover:scale-110"
-    >
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-        alt="WhatsApp"
-        className="w-8 h-8 opacity-75 hover:opacity-100 transition-opacity"
-      />
-    </a>
   );
 };
 
@@ -331,9 +309,6 @@ function App() {
               onClose={() => setShowIntroModal(false)}
             />
 
-             {/* Floating WhatsApp Button */}
-             <FloatingWhatsAppButton />
-             
             {/* Toast */}
             {toastMessage && (
               <Toast 
