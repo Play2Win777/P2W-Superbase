@@ -1,8 +1,0 @@
-# This file is used to configure the Render deployment
-static_sites:
-  - name: p2wgames
-    build_command: npm install && npm run build
-    static_path: dist
-    routes:
-      - path: /*
-        destination: /index.html
