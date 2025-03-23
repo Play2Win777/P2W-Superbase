@@ -1,0 +1,7 @@
+static_sites:
+  - name: p2wgames
+    build_command: npm install && npm run build
+    static_path: build
+    routes:
+      - path: /*
+        destination: /index.html
