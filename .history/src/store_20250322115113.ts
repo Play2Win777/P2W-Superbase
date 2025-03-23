@@ -2,13 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, FilterState, Game } from './types';
 import { fetchGames } from './api';
-import {
-  isFlashSaleEligible,
-  isIntroSaleEligible,
-  getIntroSaleDiscountRate,
-  isFlashSaleActive,
-  getVolumeDiscountRate,
-} from './utils/gameHelpers';
+import { isFlashSaleEligible } from './utils/gameHelpers';
 
 interface StoreState {
   games: Game[];
@@ -37,7 +31,6 @@ interface StoreState {
   getCartTotal: () => {
     subtotal: number;
     flashSaleDiscount: number;
-    introSaleDiscount: number;
     volumeDiscount: number;
     bundleDiscount: number;
     flashSaleActive: boolean;
@@ -144,7 +137,6 @@ export const useStore = create<StoreState>()(
                 isFlashSaleEligible: isEligible,
                 isBundleItem: game.isBundleItem || false,
                 image_url_medium: game.image_url_medium,
-                Platform: game.Platform, // Ensure Platform is included
               },
             ],
             loyaltyPoints: newPoints,
@@ -186,85 +178,49 @@ export const useStore = create<StoreState>()(
         const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const subtotal = bundleSubtotal + nonBundleSubtotal;
 
-        // Separate Intro Sale eligible items
-        const introSaleItems = nonBundleItems.filter(item => isIntroSaleEligible(item));
-        const introSaleSubtotal = introSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-        const introSaleCount = introSaleItems.reduce((count, item) => count + item.quantity, 0);
-
-        // Calculate Intro Sale discount rate
-        const introSaleDiscountRate = getIntroSaleDiscountRate(introSaleCount);
-
-        // Separate Flash Sale eligible items (including those that are also Intro Sale eligible)
+        // Calculate flash sale discount
         const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
+        const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
+        const flashSaleActive = flashSaleEligibleCount >= 3;
+        const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
 
-        // Determine if Flash Sale is active
-        const flashSaleActive = isFlashSaleActive(flashSaleEligibleCount);
-
-        // Calculate discounts for dual-eligible items (Flash Sale and Intro Sale)
-        let flashSaleDiscount = 0;
-        let introSaleDiscount = 0;
-
-        for (const item of nonBundleItems) {
-          const isIntro = isIntroSaleEligible(item);
-          const isFlash = item.isFlashSaleEligible;
-
-          if (isIntro && isFlash) {
-            // Dual-eligible item: apply the higher discount
-            const introDiscount = item.Price_to_Sell_For * item.quantity * introSaleDiscountRate;
-            const flashDiscount = flashSaleActive ? item.Price_to_Sell_For * item.quantity * 0.25 : 0;
-
-            if (flashDiscount > introDiscount) {
-              flashSaleDiscount += flashDiscount;
-            } else {
-              introSaleDiscount += introDiscount;
-            }
-          } else if (isIntro) {
-            // Intro Sale only
-            introSaleDiscount += item.Price_to_Sell_For * item.quantity * introSaleDiscountRate;
-          } else if (isFlash && flashSaleActive) {
-            // Flash Sale only
-            flashSaleDiscount += item.Price_to_Sell_For * item.quantity * 0.25;
-          }
-        }
-
-        // Determine Volume Discount rate (based on total items in cart)
+        // Calculate volume discount
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const volumeDiscountRate = getVolumeDiscountRate(totalItems);
+        let volumeDiscountRate = 0;
+        if (totalItems >= 5) volumeDiscountRate = 0.2;
+        else if (totalItems >= 3) volumeDiscountRate = 0.1;
+        else if (totalItems >= 2) volumeDiscountRate = 0.05;
 
-        // Calculate Volume Discount
         let volumeDiscount = 0;
-        if (flashSaleActive) {
-          // Apply Volume Discount only to non-flash sale and non-intro sale items
-          const volumeDiscountItems = nonBundleItems.filter(item => !item.isFlashSaleEligible && !isIntroSaleEligible(item));
-          const volumeDiscountSubtotal = volumeDiscountItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-          volumeDiscount = volumeDiscountSubtotal * volumeDiscountRate;
+        let bundleDiscount = 0;
+
+        // Calculate the subtotal of items that are NOT flash sale eligible
+        let nonFlashSubtotal = subtotal
+        if(flashSaleActive){
+            nonFlashSubtotal = subtotal - flashSaleSubtotal;
+        }
+        // Apply bundle discount if the bundle is intact
+        const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4
+
+        if (unbrokenBundle) {
+            bundleDiscount = bundleSubtotal * 0.15;
         } else {
-          // Apply Volume Discount to all items except Intro Sale eligible items
-          const volumeDiscountItems = nonBundleItems.filter(item => !isIntroSaleEligible(item));
-          const volumeDiscountSubtotal = volumeDiscountItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-          volumeDiscount = volumeDiscountSubtotal * volumeDiscountRate;
+            volumeDiscount = nonFlashSubtotal * volumeDiscountRate;
         }
 
-        // Apply bundle discount if the bundle is intact
-        const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4;
-        const bundleDiscount = unbrokenBundle ? bundleSubtotal * 0.15 : 0;
-
-        // Calculate total
-        const total = subtotal - flashSaleDiscount - introSaleDiscount - volumeDiscount - bundleDiscount;
+        const total = subtotal - flashSaleDiscount - volumeDiscount - bundleDiscount;
 
         return {
-          subtotal,
-          flashSaleDiscount,
-          introSaleDiscount,
-          introSaleDiscountRate,
-          volumeDiscount,
-          bundleDiscount,
-          flashSaleActive,
-          flashSaleEligibleCount,
-          total,
+            subtotal,
+            flashSaleDiscount,
+            volumeDiscount,
+            bundleDiscount,
+            flashSaleActive,
+            flashSaleEligibleCount,
+            total
         };
-      },
+      }
     }),
     {
       name: 'game-store',

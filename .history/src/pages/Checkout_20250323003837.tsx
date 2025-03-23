@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
-import { MessageCircle, CreditCard, ArrowLeft, Zap, Info, Truck, X, Sparkles, Check, Tag } from 'lucide-react';
-import { useExchangeRate } from '../context/ExchangeRateContext';
+import { MessageCircle, CreditCard, ArrowLeft, Zap, Info, Truck, X, Sparkles, Check } from 'lucide-react';
+import { useExchangeRate } from '../context/ExchangeRateContext'; // Import the hook
 
 export const Checkout: React.FC = () => {
-  const { exchangeRate } = useExchangeRate();
+  const { exchangeRate } = useExchangeRate(); // Use the exchange rate
   const navigate = useNavigate();
   const { cart, removeFromCart, updateCartQuantity, getCartTotal, games, clearCart } = useStore();
   const [orderComplete, setOrderComplete] = useState(false);
   const [showFlashSaleInfo, setShowFlashSaleInfo] = useState(false);
-  const [showIntroSaleInfo, setShowIntroSaleInfo] = useState(false);
   const [isWhatsAppClicked, setIsWhatsAppClicked] = useState(false);
   const [isCreditCardClicked, setIsCreditCardClicked] = useState(false);
 
@@ -23,8 +22,7 @@ export const Checkout: React.FC = () => {
   const { 
     subtotal, 
     flashSaleDiscount, 
-    introSaleDiscount,
-    introSaleDiscountRate,  
+    introSaleDiscount, // Add this line
     bundleDiscount, 
     volumeDiscount, 
     flashSaleActive,
@@ -119,7 +117,7 @@ export const Checkout: React.FC = () => {
     if (flashSaleDiscount > 0) {
       message += `\n*Flash Sale Discount:* -$${flashSaleDiscount.toFixed(2)}`;
     }
-    if (introSaleDiscount > 0) {
+    if (introSaleDiscount > 0) { // Add this block
       message += `\n*Intro Sale Discount:* -$${introSaleDiscount.toFixed(2)}`;
     }
     if (bundleDiscount > 0) {
@@ -352,26 +350,10 @@ export const Checkout: React.FC = () => {
                 )}
 
                 {/* Intro Sale Discount */}
-                {introSaleDiscount > 0 && (
-                  <div className="flex justify-between text-blue-600">
-                    <span className="flex items-center">
-                      <Tag size={16} className="mr-1" />
-                      Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
-                      <button
-                        onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                        className="ml-1 text-gray-500 hover:text-blue-600"
-                      >
-                        <Info size={14} />
-                      </button>
-                    </span>
+                {introSaleDiscount > 0 && ( // Add this block
+                  <div className="flex justify-between text-purple-600">
+                    <span>Intro Sale Discount</span>
                     <span>-${introSaleDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {/* Show Intro Sale info if enabled */}
-                {showIntroSaleInfo && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm text-gray-600 dark:text-gray-300 mb-2">
-                    Intro Sale discounts apply to Xbox One games. The discount rate increases with the number of Intro Sale items in your cart.
                   </div>
                 )}
 
@@ -616,26 +598,10 @@ export const Checkout: React.FC = () => {
               )}
 
               {/* Intro Sale Discount */}
-              {introSaleDiscount > 0 && (
-                <div className="flex justify-between text-blue-600">
-                  <span className="flex items-center">
-                    <Tag size={16} className="mr-1" />
-                    Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
-                    <button
-                      onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                      className="ml-1 text-gray-500 hover:text-blue-600"
-                    >
-                      <Info size={14} />
-                    </button>
-                  </span>
+              {introSaleDiscount > 0 && ( // Add this block
+                <div className="flex justify-between text-purple-600">
+                  <span>Intro Sale Discount</span>
                   <span>-${introSaleDiscount.toFixed(2)}</span>
-                </div>
-              )}
-
-              {/* Show Intro Sale info if enabled */}
-              {showIntroSaleInfo && (
-                <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Intro Sale discounts apply to Xbox One games. The discount rate increases with the number of Intro Sale items in your cart.
                 </div>
               )}
 

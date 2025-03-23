@@ -257,7 +257,6 @@ export const useStore = create<StoreState>()(
           subtotal,
           flashSaleDiscount,
           introSaleDiscount,
-          introSaleDiscountRate,
           volumeDiscount,
           bundleDiscount,
           flashSaleActive,

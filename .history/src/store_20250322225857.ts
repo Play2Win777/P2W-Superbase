@@ -2,13 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, FilterState, Game } from './types';
 import { fetchGames } from './api';
-import {
-  isFlashSaleEligible,
-  isIntroSaleEligible,
-  getIntroSaleDiscountRate,
-  isFlashSaleActive,
-  getVolumeDiscountRate,
-} from './utils/gameHelpers';
+import { isFlashSaleEligible } from './utils/gameHelpers';
+
+// Define isIntroSaleEligible directly in the file
+export const isIntroSaleEligible = (game: Game): boolean => {
+  if (!game) return false;
+
+  // Normalize platform name for comparison
+  const normalizedPlatform = game.Platform?.toLowerCase().trim();
+  return normalizedPlatform === 'xbox one';
+};
 
 interface StoreState {
   games: Game[];
@@ -176,88 +179,70 @@ export const useStore = create<StoreState>()(
 
       getCartTotal: () => {
         const { cart } = get();
-
+      
         // Separate items
         const bundleItems = cart.filter(item => item.isBundleItem);
         const nonBundleItems = cart.filter(item => !item.isBundleItem);
-
+      
         // Calculate subtotals
         const bundleSubtotal = bundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const nonBundleSubtotal = nonBundleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const subtotal = bundleSubtotal + nonBundleSubtotal;
-
+      
         // Separate Intro Sale eligible items
         const introSaleItems = nonBundleItems.filter(item => isIntroSaleEligible(item));
         const introSaleSubtotal = introSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const introSaleCount = introSaleItems.reduce((count, item) => count + item.quantity, 0);
-
-        // Calculate Intro Sale discount rate
-        const introSaleDiscountRate = getIntroSaleDiscountRate(introSaleCount);
-
-        // Separate Flash Sale eligible items (including those that are also Intro Sale eligible)
-        const flashSaleItems = nonBundleItems.filter(item => item.isFlashSaleEligible);
+        let introSaleDiscountRate = 0;
+      
+        if (introSaleCount >= 11) introSaleDiscountRate = 0.55;
+        else if (introSaleCount >= 10) introSaleDiscountRate = 0.5;
+        else if (introSaleCount >= 9) introSaleDiscountRate = 0.45;
+        else if (introSaleCount >= 8) introSaleDiscountRate = 0.4;
+        else if (introSaleCount >= 7) introSaleDiscountRate = 0.35;
+        else if (introSaleCount >= 6) introSaleDiscountRate = 0.3;
+        else if (introSaleCount >= 5) introSaleDiscountRate = 0.25;
+        else if (introSaleCount >= 4) introSaleDiscountRate = 0.2;
+        else if (introSaleCount >= 3) introSaleDiscountRate = 0.15;
+        else if (introSaleCount >= 2) introSaleDiscountRate = 0.1;
+        else if (introSaleCount >= 1) introSaleDiscountRate = 0.05;
+      
+        const introSaleDiscount = introSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity * introSaleDiscountRate), 0);
+      
+        // Calculate flash sale discount (only for non-Intro Sale items)
+        const flashSaleItems = nonBundleItems
+          .filter(item => item.isFlashSaleEligible && !isIntroSaleEligible(item)); // Exclude Intro Sale items
+        const flashSaleSubtotal = flashSaleItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
         const flashSaleEligibleCount = flashSaleItems.reduce((count, item) => count + item.quantity, 0);
-
-        // Determine if Flash Sale is active
-        const flashSaleActive = isFlashSaleActive(flashSaleEligibleCount);
-
-        // Calculate discounts for dual-eligible items (Flash Sale and Intro Sale)
-        let flashSaleDiscount = 0;
-        let introSaleDiscount = 0;
-
-        for (const item of nonBundleItems) {
-          const isIntro = isIntroSaleEligible(item);
-          const isFlash = item.isFlashSaleEligible;
-
-          if (isIntro && isFlash) {
-            // Dual-eligible item: apply the higher discount
-            const introDiscount = item.Price_to_Sell_For * item.quantity * introSaleDiscountRate;
-            const flashDiscount = flashSaleActive ? item.Price_to_Sell_For * item.quantity * 0.25 : 0;
-
-            if (flashDiscount > introDiscount) {
-              flashSaleDiscount += flashDiscount;
-            } else {
-              introSaleDiscount += introDiscount;
-            }
-          } else if (isIntro) {
-            // Intro Sale only
-            introSaleDiscount += item.Price_to_Sell_For * item.quantity * introSaleDiscountRate;
-          } else if (isFlash && flashSaleActive) {
-            // Flash Sale only
-            flashSaleDiscount += item.Price_to_Sell_For * item.quantity * 0.25;
-          }
-        }
-
-        // Determine Volume Discount rate (based on total items in cart)
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const volumeDiscountRate = getVolumeDiscountRate(totalItems);
-
-        // Calculate Volume Discount
-        let volumeDiscount = 0;
-        if (flashSaleActive) {
-          // Apply Volume Discount only to non-flash sale and non-intro sale items
-          const volumeDiscountItems = nonBundleItems.filter(item => !item.isFlashSaleEligible && !isIntroSaleEligible(item));
-          const volumeDiscountSubtotal = volumeDiscountItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-          volumeDiscount = volumeDiscountSubtotal * volumeDiscountRate;
-        } else {
-          // Apply Volume Discount to all items except Intro Sale eligible items
-          const volumeDiscountItems = nonBundleItems.filter(item => !isIntroSaleEligible(item));
-          const volumeDiscountSubtotal = volumeDiscountItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
-          volumeDiscount = volumeDiscountSubtotal * volumeDiscountRate;
-        }
-
+        const flashSaleActive = flashSaleEligibleCount >= 3;
+        const flashSaleDiscount = flashSaleActive ? flashSaleSubtotal * 0.25 : 0;
+      
+        // Calculate volume discount (only for non-bundle, non-flash-sale, and non-intro-sale items)
+        const volumeDiscountItems = nonBundleItems
+          .filter(item => !item.isFlashSaleEligible && !isIntroSaleEligible(item)); // Exclude Flash Sale and Intro Sale items
+        const volumeDiscountSubtotal = volumeDiscountItems.reduce((sum, item) => sum + (item.Price_to_Sell_For * item.quantity), 0);
+        const totalVolumeItems = volumeDiscountItems.reduce((sum, item) => sum + item.quantity, 0);
+        let volumeDiscountRate = 0;
+        if (totalVolumeItems >= 5) volumeDiscountRate = 0.2;
+        else if (totalVolumeItems >= 3) volumeDiscountRate = 0.1;
+        else if (totalVolumeItems >= 2) volumeDiscountRate = 0.05;
+      
+        let volumeDiscount = volumeDiscountSubtotal * volumeDiscountRate;
+        let bundleDiscount = 0;
+      
         // Apply bundle discount if the bundle is intact
         const unbrokenBundle = bundleItems.length === cart.length && cart.length === 4;
-        const bundleDiscount = unbrokenBundle ? bundleSubtotal * 0.15 : 0;
-
-        // Calculate total
+      
+        if (unbrokenBundle) {
+          bundleDiscount = bundleSubtotal * 0.15;
+        }
+      
         const total = subtotal - flashSaleDiscount - introSaleDiscount - volumeDiscount - bundleDiscount;
-
+      
         return {
           subtotal,
           flashSaleDiscount,
           introSaleDiscount,
-          introSaleDiscountRate,
           volumeDiscount,
           bundleDiscount,
           flashSaleActive,

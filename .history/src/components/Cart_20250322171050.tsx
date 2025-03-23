@@ -3,7 +3,6 @@ import { ShoppingCart, X, Zap, AlertCircle, Info } from 'lucide-react';
 import { useStore } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { useExchangeRate } from '../context/ExchangeRateContext';
-import {IntroSaleDiscountRate} from '../utils/gameHelpers'; // Import the helper function
 
 export const Cart: React.FC = () => {
   const { exchangeRate } = useExchangeRate();
@@ -18,7 +17,6 @@ export const Cart: React.FC = () => {
     subtotal, 
     flashSaleDiscount,
     introSaleDiscount, 
-    introSaleDiscountRate, // Add this line
     volumeDiscount, 
     bundleDiscount,
     flashSaleActive,
@@ -244,7 +242,7 @@ export const Cart: React.FC = () => {
               <div className="flex justify-between items-center mb-2 text-blue-600">
                 <span className="flex items-center">
                   <Zap size={14} className="mr-1" />
-                  Intro Sale Discount ({Math.round(introSaleDiscountRate * 100)}%):
+                  Intro Sale Discount ({introSalediscountPercent}%)
                 </span>
                 <span>-${introSaleDiscount.toFixed(2)}</span>
               </div>

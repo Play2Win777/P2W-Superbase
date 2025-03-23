@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
-import { MessageCircle, CreditCard, ArrowLeft, Zap, Info, Truck, X, Sparkles, Check, Tag } from 'lucide-react';
-import { useExchangeRate } from '../context/ExchangeRateContext';
+import { MessageCircle, CreditCard, ArrowLeft, Zap, Info, Truck, X, Sparkles, Check } from 'lucide-react';
+import { useExchangeRate } from '../context/ExchangeRateContext'; // Import the hook
+import {getIntroSaleDiscountRate} from '../utils/gameHelpers'; // Import the helper function
 
 export const Checkout: React.FC = () => {
-  const { exchangeRate } = useExchangeRate();
+  const { exchangeRate } = useExchangeRate(); // Use the exchange rate
   const navigate = useNavigate();
   const { cart, removeFromCart, updateCartQuantity, getCartTotal, games, clearCart } = useStore();
   const [orderComplete, setOrderComplete] = useState(false);
   const [showFlashSaleInfo, setShowFlashSaleInfo] = useState(false);
-  const [showIntroSaleInfo, setShowIntroSaleInfo] = useState(false);
   const [isWhatsAppClicked, setIsWhatsAppClicked] = useState(false);
   const [isCreditCardClicked, setIsCreditCardClicked] = useState(false);
 
@@ -19,12 +19,10 @@ export const Checkout: React.FC = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerLocation, setCustomerLocation] = useState('');
 
-  // Get cart totals including discounts
+  // Get cart totals including flash sale discounts
   const { 
     subtotal, 
     flashSaleDiscount, 
-    introSaleDiscount,
-    introSaleDiscountRate,  
     bundleDiscount, 
     volumeDiscount, 
     flashSaleActive,
@@ -118,9 +116,6 @@ export const Checkout: React.FC = () => {
     // Add discount summary if applicable
     if (flashSaleDiscount > 0) {
       message += `\n*Flash Sale Discount:* -$${flashSaleDiscount.toFixed(2)}`;
-    }
-    if (introSaleDiscount > 0) {
-      message += `\n*Intro Sale Discount:* -$${introSaleDiscount.toFixed(2)}`;
     }
     if (bundleDiscount > 0) {
       message += `\n*Bundle Discount (15% off):* -$${bundleDiscount.toFixed(2)}`;
@@ -351,30 +346,6 @@ export const Checkout: React.FC = () => {
                   </div>
                 )}
 
-                {/* Intro Sale Discount */}
-                {introSaleDiscount > 0 && (
-                  <div className="flex justify-between text-blue-600">
-                    <span className="flex items-center">
-                      <Tag size={16} className="mr-1" />
-                      Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
-                      <button
-                        onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                        className="ml-1 text-gray-500 hover:text-blue-600"
-                      >
-                        <Info size={14} />
-                      </button>
-                    </span>
-                    <span>-${introSaleDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {/* Show Intro Sale info if enabled */}
-                {showIntroSaleInfo && (
-                  <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm text-gray-600 dark:text-gray-300 mb-2">
-                    Intro Sale discounts apply to Xbox One games. The discount rate increases with the number of Intro Sale items in your cart.
-                  </div>
-                )}
-
                 {/* Show bundle discount if applicable */}
                 {bundleDiscount > 0 && (
                   <div className="flex justify-between items-center mb-2 text-purple-600">
@@ -413,9 +384,9 @@ export const Checkout: React.FC = () => {
                   </div>
 
                   {/* Show savings if any discount applied */}
-                  {(flashSaleDiscount > 0 || volumeDiscount > 0 || bundleDiscount > 0 || introSaleDiscount > 0) && (
+                  {(flashSaleDiscount > 0 || volumeDiscount > 0 || bundleDiscount > 0) && (
                     <div className="text-green-600 text-sm text-right mt-1">
-                      You saved: ${(flashSaleDiscount + volumeDiscount + bundleDiscount + introSaleDiscount).toFixed(2)}
+                      You saved: ${(flashSaleDiscount + volumeDiscount + bundleDiscount).toFixed(2)}
                     </div>
                   )}
                 </div>
@@ -615,30 +586,6 @@ export const Checkout: React.FC = () => {
                 </div>
               )}
 
-              {/* Intro Sale Discount */}
-              {introSaleDiscount > 0 && (
-                <div className="flex justify-between text-blue-600">
-                  <span className="flex items-center">
-                    <Tag size={16} className="mr-1" />
-                    Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
-                    <button
-                      onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                      className="ml-1 text-gray-500 hover:text-blue-600"
-                    >
-                      <Info size={14} />
-                    </button>
-                  </span>
-                  <span>-${introSaleDiscount.toFixed(2)}</span>
-                </div>
-              )}
-
-              {/* Show Intro Sale info if enabled */}
-              {showIntroSaleInfo && (
-                <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Intro Sale discounts apply to Xbox One games. The discount rate increases with the number of Intro Sale items in your cart.
-                </div>
-              )}
-
               {/* Show bundle discount if applicable */}
               {bundleDiscount > 0 && (
                 <div className="flex justify-between items-center mb-2 text-purple-600">
@@ -685,9 +632,9 @@ export const Checkout: React.FC = () => {
                 )}
 
                 {/* Show savings if any discount applied */}
-                {(flashSaleDiscount > 0 || volumeDiscount > 0 || bundleDiscount > 0 || introSaleDiscount > 0) && (
+                {(flashSaleDiscount > 0 || volumeDiscount > 0 || bundleDiscount > 0) && (
                   <div className="text-green-600 text-sm text-right mt-1">
-                    You saved: ${(flashSaleDiscount + volumeDiscount + bundleDiscount + introSaleDiscount).toFixed(2)}
+                    You saved: ${(flashSaleDiscount + volumeDiscount + bundleDiscount).toFixed(2)}
                   </div>
                 )}
               </div>

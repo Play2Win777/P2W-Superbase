@@ -10,25 +10,18 @@ import { Cart } from './components/Cart';
 import { GameDetails } from './pages/GameDetails';
 import { Checkout } from './pages/Checkout';
 import { FlashSalePage } from './pages/FlashSalePage';
-import { IntroSalePage } from './pages/IntroSalePage';
 import { DiscountPopup } from './components/DiscountPopup';
 import { ThemeContext } from './context/ThemeContext';
 import { Toast } from './components/Toast';
-import { ExchangeRateProvider } from './context/ExchangeRateContext';
+import { ExchangeRateProvider } from './context/ExchangeRateContext'; // Import the ExchangeRateProvider
 
 // IntroModal Component
 const IntroModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-      onClick={onClose} // Close modal when clicking outside
-    >
-      <div
-        className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto shadow-lg transform transition-all duration-300 ease-out animate-fade-in-scale"
-        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
-      >
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto shadow-lg">
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
@@ -88,7 +81,10 @@ const IntroModal = ({ isOpen, onClose }) => {
               <div>
                 <p className="font-semibold">Special Xbox One Sale!</p>
                 <p className="text-sm">
-                  For every Xbox One game you add to your cart, you get <strong>5% off</strong> on those games. <strong>Get up to 55% off.</strong>
+                  For every Xbox One game you add to your cart, you get <strong>5% off</strong> on those games. <strong>get up to 5% off</strong>
+                  <span className="block mt-1 text-red-600 dark:text-red-400">
+                    Note: This discount will not be shown on the website. I will apply it when we meet for the exchange.
+                  </span>
                 </p>
               </div>
             </div>
@@ -258,7 +254,7 @@ function App() {
 
   return (
     <ThemeContext.Provider value={themeValue}>
-      <ExchangeRateProvider>
+      <ExchangeRateProvider> {/* Wrap the app with ExchangeRateProvider */}
         <Router>
           <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
             {/* Intro Modal */}
@@ -300,7 +296,7 @@ function App() {
                   </div>
 
                   <button
-                    onClick={() => setShowIntroModal((prev) => !prev)} // Toggle modal
+                    onClick={() => setShowIntroModal(true)}
                     className="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors shadow-lg relative group"
                   >
                     <HelpCircle size={24} />
@@ -346,7 +342,6 @@ function App() {
               <Route path="/game/:id" element={<GameDetails />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/flash-sale" element={<FlashSalePage />} />
-              <Route path="/intro-sale" element={<IntroSalePage />} />
             </Routes>
 
             <Footer toggleDarkMode={themeValue.toggleDarkMode} darkMode={darkMode} />

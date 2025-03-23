@@ -184,7 +184,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       )}
       {/* Intro Sale Badge */}
       {isIntroEligible && (
-        <Link to={`/intro-sale?platform=${game.Platform}`} className="absolute top-10 left-2 z-20">
+        <Link to={`/intro-sale?platform=${game.Platform}`} className="absolute top-2 left-2 z-20">
           <span className="inline-flex items-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-2 py-1 rounded-md text-xs font-semibold">
             <Zap size={12} className="mr-1" />
             Intro Sale

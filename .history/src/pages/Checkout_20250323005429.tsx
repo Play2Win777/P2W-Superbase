@@ -10,7 +10,7 @@ export const Checkout: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, getCartTotal, games, clearCart } = useStore();
   const [orderComplete, setOrderComplete] = useState(false);
   const [showFlashSaleInfo, setShowFlashSaleInfo] = useState(false);
-  const [showIntroSaleInfo, setShowIntroSaleInfo] = useState(false);
+  const [showIntroSaleInfo, setShowIntroSaleInfo] = useState(false); // Add this line
   const [isWhatsAppClicked, setIsWhatsAppClicked] = useState(false);
   const [isCreditCardClicked, setIsCreditCardClicked] = useState(false);
 
@@ -23,8 +23,7 @@ export const Checkout: React.FC = () => {
   const { 
     subtotal, 
     flashSaleDiscount, 
-    introSaleDiscount,
-    introSaleDiscountRate,  
+    introSaleDiscount, 
     bundleDiscount, 
     volumeDiscount, 
     flashSaleActive,
@@ -356,10 +355,10 @@ export const Checkout: React.FC = () => {
                   <div className="flex justify-between text-blue-600">
                     <span className="flex items-center">
                       <Tag size={16} className="mr-1" />
-                      Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
+                      Intro Sale ({Math.round(getIntroSaleDiscountRate(cart.filter(item => isIntroSaleEligible(item)).length) * 100)}% off)
                       <button
                         onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                        className="ml-1 text-gray-500 hover:text-blue-600"
+                        className="ml-1 text-gray-500 hover:text-purple-600"
                       >
                         <Info size={14} />
                       </button>
@@ -617,13 +616,13 @@ export const Checkout: React.FC = () => {
 
               {/* Intro Sale Discount */}
               {introSaleDiscount > 0 && (
-                <div className="flex justify-between text-blue-600">
+                <div className="flex justify-between text-purple-600">
                   <span className="flex items-center">
                     <Tag size={16} className="mr-1" />
-                    Intro Sale ({Math.round(introSaleDiscountRate * 100)}% off)
+                    Intro Sale ({getIntroSaleDiscountRate(cart.filter(item => isIntroSaleEligible(item)).length * 100}% off)
                     <button
                       onClick={() => setShowIntroSaleInfo(!showIntroSaleInfo)}
-                      className="ml-1 text-gray-500 hover:text-blue-600"
+                      className="ml-1 text-gray-500 hover:text-purple-600"
                     >
                       <Info size={14} />
                     </button>

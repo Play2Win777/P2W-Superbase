@@ -3,7 +3,6 @@ import { ShoppingCart, X, Zap, AlertCircle, Info } from 'lucide-react';
 import { useStore } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { useExchangeRate } from '../context/ExchangeRateContext';
-import {IntroSaleDiscountRate} from '../utils/gameHelpers'; // Import the helper function
 
 export const Cart: React.FC = () => {
   const { exchangeRate } = useExchangeRate();
